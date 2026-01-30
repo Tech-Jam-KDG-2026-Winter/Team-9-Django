@@ -7,5 +7,5 @@ urlpatterns = [
     path("healthz/", healthz),
 
     path("auth/", include("apps.accounts.urls")),
-    path("", include("apps.reservations.urls")),   # / をダッシュボードにする
+    path("reservations/", include("apps.reservations.urls")),
 ]
