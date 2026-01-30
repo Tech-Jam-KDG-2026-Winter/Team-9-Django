@@ -2,7 +2,9 @@ from pathlib import Path
 
 # config/settings/base.py
 # BASE_DIR は manage.py があるディレクトリを指すのが都合が良い
-BASE_DIR = Path(__file__).resolve().parents[3]
+BASE_DIR = Path(__file__).resolve()
+while not (BASE_DIR / "manage.py").exists():
+    BASE_DIR = BASE_DIR.parent
 
 SECRET_KEY = "django-insecure-x!e8w94#_z0x*10ek4f^v2*19%1hs167aj8!57htfo@mxalpeg"
 DEBUG = True
