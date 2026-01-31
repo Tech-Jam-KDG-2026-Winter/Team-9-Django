@@ -1,3 +1,70 @@
+import json
 from django.shortcuts import render
+from django.contrib.auth import get_user_model, authenticate, login, logout
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 
-# Create your views here.
+User = get_user_model()
+
+def _get_body(request):
+    if request.content_type == "application/json":
+        try:
+            return json.loads(request.body.decode("utf-8"))
+        except json.JSONDecodeError:
+            return {}
+    return request.POST
+
+@ensure_csrf_cookie
+def csrf(request):
+    return JsonResponse({"ok": True})
+
+@csrf_protect
+@require_POST
+def signup(request):
+    data = _get_body(request)
+    email = data.get("email")
+    password = data.get("password")
+    display_name = data.get("display_name")
+
+    if not email or not password or not display_name:
+        return JsonResponse({"error": "missing fields"}, status=400)
+
+    user = User.objects.create_user(
+        email=email,
+        password=password,
+        display_name=display_name,
+    )
+    login(request, user)
+    return JsonResponse({
+        "id": user.id,
+        "user_id": str(user.user_id),
+        "email": user.email,
+        "display_name": user.display_name,
+        "team_id": user.team_id,
+    }, status=201)
+
+@csrf_protect
+@require_POST
+def login_view(request):
+    data = _get_body(request)
+    email = data.get("email")
+    password = data.get("password")
+
+    user = authenticate(request, email=email, password=password)
+    if user is None:
+        return JsonResponse({"error": "invalid credentials"}, status=400)
+
+    login(request, user)
+    return JsonResponse({
+        "id": user.id,
+        "user_id": str(user.user_id),
+        "email": user.email,
+        "display_name": user.display_name,
+        "team_id": user.team_id,
+    }, status=200)
+
+@require_POST
+def logout_view(request):
+    logout(request)
+    return JsonResponse({"ok": True})
