@@ -3,5 +3,5 @@ __pycache__/
 *.pyc
 *.sqlite3
 .env
-.DS_Store
+**/.DS_Store
 cookie.txt
