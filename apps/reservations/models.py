@@ -24,7 +24,7 @@ class Reservation(models.Model):
   )
 
   team = models.ForeignKey(
-    "accounts.Team",
+    "accounts.Teams",
     on_delete=models.CASCADE,
     related_name="reservations",
     null=True,
