@@ -106,6 +106,14 @@ class TicketTransaction(models.Model):
                 ),
                 name="ticket_owner_match",
             ),
+            # INITIAL_GRANT のときは ref_type / ref_id を必須
+            models.CheckConstraint(
+                condition=(
+                    ~models.Q(source="INITIAL_GRANT") |
+                    (models.Q(ref_type__isnull=False) & models.Q(ref_id__isnull=False))
+                ),
+                name="initial_grant_requires_ref",
+            ),
             # 同一参照の二重書き込み防止
             models.UniqueConstraint(
                 fields=["owner_type", "user", "team", "source", "ref_type", "ref_id"],
