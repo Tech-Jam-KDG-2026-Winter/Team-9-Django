@@ -1,0 +1,27 @@
+<h1>完了</h1>
+
+<form method="post">
+  {% csrf_token %}
+
+  <div>
+    <label>種別（必須）</label>
+    {{ form.activity_type }}
+    {% for e in form.activity_type.errors %}
+      <p>{{ e }}</p>
+    {% endfor %}
+  </div>
+
+  <div>
+    <label>メモ（任意）</label>
+    {{ form.memo }}
+  </div>
+
+  <div>
+    <label>
+      {{ form.share_detail }}
+      詳細（種別＋メモ）をタイムラインに投稿する
+    </label>
+  </div>
+
+  <button type="submit">完了する</button>
+</form>

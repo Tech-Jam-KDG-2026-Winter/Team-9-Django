@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from datetime import timedelta
 
-from .forms import ReservationForm
+from .forms import ReservationForm,ReservationCompleteForm
 from .models import Reservation
 
 
@@ -80,15 +80,26 @@ def complete_reservation(request, reservation_id):
         id=reservation_id,
         user=request.user,
     )
-
-    if request.method != "POST":
-        return redirect("dashboard")
-
     if reservation.checkin_at is None:
         return redirect("dashboard")
 
-    reservation.status = "completed"
-    reservation.completed_at = timezone.now()
-    reservation.save(update_fields=["status", "completed_at", "updated_at"])
+    if reservation.status == "completed":
+        return redirect("dashboard") 
 
-    return redirect("dashboard")
+    if request.method == "POST":
+        form = ReservationCompleteForm(request.POST, instance=reservation)
+        if form.is_valid():
+            r = form.save(commit=False)
+            r.status = "completed"
+            r.completed_at = timezone.now()
+            r.save(update_fields=[
+                "activity_type", "memo", "share_detail",
+                "status", "completed_at", "updated_at"
+            ])
+
+            return redirect("dashboard")
+    else:
+
+        form = ReservationCompleteForm(instance=reservation)
+
+    return render(request, "reservations/record.html", {"reservation": reservation, "form": form})
