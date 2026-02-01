@@ -30,8 +30,22 @@ def new_reservation(request):
 
     return render(request, "reservations/new.html", {"form": form})
 
+def mark_missed_reservations(user):
+    now = timezone.now()
+    deadline = now - timedelta(minutes=30)
+
+    qs = Reservation.objects.filter(
+        user=user,
+        status="scheduled",
+        completed_at__isnull=True,
+        start_at__lt=deadline,
+    )
+
+    qs.update(status="missed", updated_at=now)
 
 def dashboard(request):
+    mark_missed_reservations(request.user)
+
     reservations = Reservation.objects.filter(
         user=request.user,
         start_at__date=timezone.localdate(),
@@ -109,3 +123,36 @@ def complete_reservation(request, reservation_id):
         "reservations/record.html",
         {"reservation": reservation, "form": form},
     )
+
+@login_required
+def use_recovery(request, reservation_id):
+    reservation = get_object_or_404(
+        Reservation,
+        id=reservation_id,
+        user=request.user,
+    )
+
+    if request.method != "POST":
+        return redirect("dashboard")
+
+    if reservation.status != "missed":
+        return redirect("dashboard")
+
+    if reservation.used_recovery:
+        return redirect("dashboard")
+
+    profile = request.user
+
+    if profile.last_recovery_at:
+        one_week_ago = timezone.now() - timedelta(days=7)
+        if profile.last_recovery_at > one_week_ago:
+            return redirect("dashboard")
+
+    reservation.status = "recovery"
+    reservation.used_recovery = True
+    reservation.save(update_fields=["status", "used_recovery", "updated_at"])
+
+    profile.last_recovery_at = timezone.now()
+    profile.save(update_fields=["last_recovery_at"])
+
+    return redirect("dashboard")
