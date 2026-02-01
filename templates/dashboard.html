@@ -7,15 +7,12 @@
   <div>
     <p>{{ item.reservation.start_at }}</p>
 
-    {% if item.checked_in %}
+    {% if item.completed %}
+      <span>達成</span>
+    {% elif item.checked_in %}
       <span>チェックイン済み</span>
-
     {% elif item.can_checkin %}
-      <form method="post" action="{% url 'reservation_checkin' item.reservation.id %}">
-        {% csrf_token %}
-        <button type="submit">チェックイン</button>
-      </form>
-
+      ...チェックインボタン...
     {% else %}
       <span>まだ</span>
     {% endif %}

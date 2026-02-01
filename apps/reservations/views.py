@@ -38,8 +38,9 @@ def dashboard(request):
     for r in reservations:
         reservation_items.append({
             "reservation": r,
-            "can_checkin": can_checkin(r) and r.checkin_at is None,
+            "completed": r.status == "completed" or r.completed_at is not None,
             "checked_in": r.checkin_at is not None,
+            "can_checkin": can_checkin(r) and r.checkin_at is None,
         })
 
     return render(request, "dashboard.html", {"reservation_items": reservation_items})
@@ -70,3 +71,24 @@ def action_reservation(request, reservation_id):
         return redirect("/?error=need_checkin")
 
     return render(request, "reservations/action.html", {"reservation": reservation})
+
+
+@login_required
+def complete_reservation(request, reservation_id):
+    reservation = get_object_or_404(
+        Reservation,
+        id=reservation_id,
+        user=request.user,
+    )
+
+    if request.method != "POST":
+        return redirect("dashboard")
+
+    if reservation.checkin_at is None:
+        return redirect("dashboard")
+
+    reservation.status = "completed"
+    reservation.completed_at = timezone.now()
+    reservation.save(update_fields=["status", "completed_at", "updated_at"])
+
+    return redirect("dashboard")
