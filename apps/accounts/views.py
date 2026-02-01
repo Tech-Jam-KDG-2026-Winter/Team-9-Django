@@ -4,7 +4,7 @@ from django.db import IntegrityError, transaction
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
-from .services import assign_team_for_user
+from .services import assign_team_for_user, grant_initial_tickets
 
 User = get_user_model()
 
@@ -44,6 +44,7 @@ def signup(request):
                 display_name=display_name,
                 team=team,
             )
+            grant_initial_tickets(user)
     except IntegrityError:
         return JsonResponse({"error": "email already exists"}, status=400)
 
