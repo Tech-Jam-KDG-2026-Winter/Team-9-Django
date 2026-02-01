@@ -89,7 +89,8 @@ def me(request):
     team = user.team
 
     return JsonResponse({
-        "user_id": user.id,
+        "id": user.id,
+        "user_id": str(user.user_id),
         "email": user.email,
         "display_name": user.display_name,
         "team": {
