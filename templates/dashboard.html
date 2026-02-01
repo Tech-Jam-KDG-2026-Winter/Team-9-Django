@@ -1,1 +1,23 @@
+
+
 <h2>ホーム</h2>
+<h1>今日の予約</h1>
+
+{% for item in reservation_items %}
+  <div>
+    <p>{{ item.reservation.start_at }}</p>
+
+    {% if item.checked_in %}
+      <span>チェックイン済み</span>
+
+    {% elif item.can_checkin %}
+      <form method="post" action="{% url 'reservation_checkin' item.reservation.id %}">
+        {% csrf_token %}
+        <button type="submit">チェックイン</button>
+      </form>
+
+    {% else %}
+      <span>まだ</span>
+    {% endif %}
+  </div>
+{% endfor %}
