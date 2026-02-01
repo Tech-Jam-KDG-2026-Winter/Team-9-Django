@@ -29,11 +29,12 @@ def assign_team_for_user():
     return team
 
 def grant_initial_tickets(user):
-    return TicketTransaction.objects.create(
+    ticket, _ = TicketTransaction.objects.get_or_create(
         owner_type=TicketTransaction.OwnerType.USER,
         user=user,
         source=TicketSource.INITIAL_GRANT,
-        amount=7,
         ref_type="initial_grant",
         ref_id=str(user.user_id),
+        defaults={"amount": 7},
     )
+    return ticket
