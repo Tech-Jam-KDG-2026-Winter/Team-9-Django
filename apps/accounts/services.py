@@ -1,6 +1,6 @@
 from django.db import transaction
 from django.db.models import Count
-from .models import Teams, UserProfiles
+from .models import Teams, UserProfiles, TicketTransaction, TicketSource
 
 @transaction.atomic
 def assign_team_for_user():
@@ -27,3 +27,13 @@ def assign_team_for_user():
         team.save(update_fields=["is_open"])
 
     return team
+
+def grant_initial_tickets(user):
+    return TicketTransaction.objects.create(
+        owner_type=TicketTransaction.OwnerType.USER,
+        user=user,
+        source=TicketSource.INITIAL_GRANT,
+        amount=7,
+        ref_type="initial_grant",
+        ref_id=str(user.user_id),
+    )
