@@ -1,6 +1,7 @@
 from django.db import transaction
 from django.db.models import Count, Sum
-from .models import Teams, UserProfiles, TicketTransaction
+from .models import Teams, UserProfiles, TicketTransaction, TicketSource
+
 
 @transaction.atomic
 def assign_team_for_user():
@@ -43,3 +44,14 @@ def get_team_pool_balance(team):
         .aggregate(total=Sum("amount"))
         .get("total") or 0
     )
+
+def grant_initial_tickets(user):
+    ticket, _ = TicketTransaction.objects.get_or_create(
+        owner_type=TicketTransaction.OwnerType.USER,
+        user=user,
+        source=TicketSource.INITIAL_GRANT,
+        ref_type="initial_grant",
+        ref_id=str(user.user_id),
+        defaults={"amount": 7},
+    )
+    return ticket
