@@ -10,6 +10,10 @@ from .models import Reservation
 def can_checkin(reservation):
     now = timezone.now()
     start = reservation.start_at
+
+    if timezone.is_naive(start):
+        start = timezone.make_aware(start, timezone.get_current_timezone())
+
     return (start - timedelta(minutes=10)) <= now <= (start + timedelta(minutes=30))
 
 
@@ -80,11 +84,10 @@ def complete_reservation(request, reservation_id):
         id=reservation_id,
         user=request.user,
     )
+    if reservation.status == "completed" or reservation.completed_at is not None:
+        return redirect("dashboard")
     if reservation.checkin_at is None:
         return redirect("dashboard")
-
-    if reservation.status == "completed":
-        return redirect("dashboard") 
 
     if request.method == "POST":
         form = ReservationCompleteForm(request.POST, instance=reservation)
