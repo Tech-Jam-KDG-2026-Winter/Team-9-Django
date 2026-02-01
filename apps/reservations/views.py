@@ -1,9 +1,8 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.utils import timezone
 from datetime import timedelta
-
-from .forms import ReservationForm,ReservationCompleteForm
+from django.utils import timezone
+from .forms import ReservationForm, ReservationCompleteForm
 from .models import Reservation
 
 
@@ -28,10 +27,10 @@ def new_reservation(request):
             return redirect("dashboard")
     else:
         form = ReservationForm()
+
     return render(request, "reservations/new.html", {"form": form})
 
 
-@login_required
 def dashboard(request):
     reservations = Reservation.objects.filter(
         user=request.user,
@@ -84,8 +83,10 @@ def complete_reservation(request, reservation_id):
         id=reservation_id,
         user=request.user,
     )
+
     if reservation.status == "completed" or reservation.completed_at is not None:
         return redirect("dashboard")
+
     if reservation.checkin_at is None:
         return redirect("dashboard")
 
@@ -99,10 +100,12 @@ def complete_reservation(request, reservation_id):
                 "activity_type", "memo", "share_detail",
                 "status", "completed_at", "updated_at"
             ])
-
             return redirect("dashboard")
     else:
-
         form = ReservationCompleteForm(instance=reservation)
 
-    return render(request, "reservations/record.html", {"reservation": reservation, "form": form})
+    return render(
+        request,
+        "reservations/record.html",
+        {"reservation": reservation, "form": form},
+    )

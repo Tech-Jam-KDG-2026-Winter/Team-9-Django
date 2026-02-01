@@ -1,7 +1,6 @@
 <h1>運動中</h1>
 <p>予約：{{ reservation.start_at }}</p>
 
-<form method="post" action="{% url 'reservation_complete' reservation.id %}">
-  {% csrf_token %}
-  <a href="{% url 'reservation_complete' reservation.id %}">運動を終了する</a>
+<form method="get" action="{% url 'reservation_complete' reservation.id %}">
+  <button type="submit">運動を終了する</button>
 </form>
