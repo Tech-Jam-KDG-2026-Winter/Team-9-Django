@@ -1,9 +1,10 @@
 import json
 from django.contrib.auth import get_user_model, authenticate, login, logout
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
+from .services import assign_team_for_user
 
 User = get_user_model()
 
@@ -35,11 +36,14 @@ def signup(request):
         return JsonResponse({"error": "email already exists"}, status=400)
 
     try:
-        user = User.objects.create_user(
-            email=email,
-            password=password,
-            display_name=display_name,
-        )
+        with transaction.atomic():
+            team = assign_team_for_user()
+            user = User.objects.create_user(
+                email=email,
+                password=password,
+                display_name=display_name,
+                team=team,
+            )
     except IntegrityError:
         return JsonResponse({"error": "email already exists"}, status=400)
 
