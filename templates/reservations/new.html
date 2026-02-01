@@ -1,2 +1,7 @@
-<h1>予約作成ページ</h1>
-<p>ここにフォームを作ります</p>
+<h1>予約作成</h1>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">予約する</button>
+</form>
