@@ -1,1 +1,20 @@
+
+
 <h2>ホーム</h2>
+<h1>今日の予約</h1>
+
+{% for item in reservation_items %}
+  <div>
+    <p>{{ item.reservation.start_at }}</p>
+
+    {% if item.completed %}
+      <span>達成</span>
+    {% elif item.checked_in %}
+      <span>チェックイン済み</span>
+    {% elif item.can_checkin %}
+      ...チェックインボタン...
+    {% else %}
+      <span>まだ</span>
+    {% endif %}
+  </div>
+{% endfor %}
