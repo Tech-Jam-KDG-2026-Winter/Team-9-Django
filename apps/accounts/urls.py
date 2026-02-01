@@ -1,2 +1,9 @@
 from django.urls import path
-urlpatterns = []
+from .views import signup, login_view, logout_view, csrf
+
+urlpatterns = [
+    path("csrf/", csrf, name="csrf"),
+    path("signup/", signup, name="signup"),
+    path("login/", login_view, name="login"),
+    path("logout/", logout_view, name="logout"),
+]
