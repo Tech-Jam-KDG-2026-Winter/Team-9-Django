@@ -1,6 +1,6 @@
 from django.db import transaction
-from django.db.models import Count
-from .models import Teams, UserProfiles
+from django.db.models import Count, Sum
+from .models import Teams, UserProfiles, TicketTransaction
 
 @transaction.atomic
 def assign_team_for_user():
@@ -27,3 +27,19 @@ def assign_team_for_user():
         team.save(update_fields=["is_open"])
 
     return team
+
+def get_user_ticket_balance(user):
+    return (
+        TicketTransaction.objects
+        .filter(owner_type=TicketTransaction.OwnerType.USER, user=user)
+        .aggregate(total=Sum("amount"))
+        .get("total") or 0
+    )
+
+def get_team_pool_balance(team):
+    return (
+        TicketTransaction.objects
+        .filter(owner_type=TicketTransaction.OwnerType.TEAM, team=team)
+        .aggregate(total=Sum("amount"))
+        .get("total") or 0
+    )

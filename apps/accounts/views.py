@@ -1,10 +1,11 @@
 import json
 from django.contrib.auth import get_user_model, authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
-from .services import assign_team_for_user
+from .services import assign_team_for_user, get_user_ticket_balance, get_team_pool_balance
 
 User = get_user_model()
 
@@ -81,3 +82,22 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return JsonResponse({"ok": True})
+
+@login_required
+def me(request):
+    user = request.user
+    team = user.team
+
+    return JsonResponse({
+        "user_id": user.id,
+        "email": user.email,
+        "display_name": user.display_name,
+        "team": {
+            "id": team.id if team else None,
+            "name": team.name if team else None,
+        },
+        "balances": {
+            "user_tickets": get_user_ticket_balance(user),
+            "team_pool": get_team_pool_balance(team) if team else 0,
+        },
+    })
