@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <title>ログイン</title>
+</head>
+
+<body>
+  <h1>ログイン</h1>
+
+  <form id="login-form">
+    <div>
+      <label>Email</label><br>
+      <input type="email" name="email" required>
+    </div>
+
+    <div>
+      <label>Password</label><br>
+      <input type="password" name="password" required>
+    </div>
+
+    <button type="submit">ログイン</button>
+  </form>
+
+  <p id="error" style="color:red;"></p>
+
+  <script>
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let cookie of cookies) {
+          cookie = cookie.trim();
+          if (cookie.startsWith(name + "=")) {
+            cookieValue = decodeURIComponent(cookie.slice(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    const csrftoken = getCookie("csrftoken");
+
+    document.getElementById("login-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const form = e.target;
+      const data = {
+        email: form.email.value,
+        password: form.password.value,
+      };
+
+      const res = await fetch("/auth/login/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrftoken,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (res.ok) {
+        // ログイン成功 → dashboardへ
+        window.location.href = "/";
+      } else {
+        document.getElementById("error").textContent =
+          "ログインに失敗しました";
+      }
+    });
+  </script>
+</body>
+
+</html>
