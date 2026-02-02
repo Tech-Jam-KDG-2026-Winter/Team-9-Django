@@ -1,17 +1,26 @@
 from datetime import timedelta
 
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .forms import ReservationForm, ReservationCompleteForm
 from .models import Reservation
-
-from apps.accounts.models import TicketTransaction, TicketSource, UserProfiles
 from apps.timeline.models import TimelinePost, Like
-from django.db.models import Count
+from apps.accounts.services import (
+    create_reservation_deposit,
+    create_deposit_return,
+    create_admin_bonus,
+    create_fail_to_team_pool,
+    create_recovery,
+)
 
+
+# =========================
+# 共通ロジック
+# =========================
 
 def can_checkin(reservation):
     now = timezone.now()
@@ -21,20 +30,6 @@ def can_checkin(reservation):
         start = timezone.make_aware(start, timezone.get_current_timezone())
 
     return (start - timedelta(minutes=10)) <= now <= (start + timedelta(minutes=30))
-
-
-# NOTE: TicketTransaction連携は Backend(1) 実装確定後に有効化予定
-def _create_ticket_tx_safe(*, owner_type, user, team, source, amount, ref_type, ref_id):
-
-    TicketTransaction.objects.get_or_create(
-        owner_type=owner_type,
-        user=user,
-        team=team,
-        source=source,
-        ref_type=ref_type,
-        ref_id=ref_id,
-        defaults={"amount": amount},
-    )
 
 
 def mark_missed_reservations(user):
@@ -52,52 +47,58 @@ def mark_missed_reservations(user):
         r.status = "missed"
         r.save(update_fields=["status", "updated_at"])
 
-        _create_ticket_tx_safe(
-            owner_type=TicketTransaction.OwnerType.USER,
-            user=user,
-            team=None,
-            source=TicketSource.FAIL_TO_TEAM_POOL,
-            amount=-1,
-            ref_type="reservation_miss_user",
-            ref_id=str(r.id),
-        )
-
-        #if getattr(user, "team", None):
-            #_create_ticket_tx_safe(
-               # owner_type=TicketTransaction.OwnerType.TEAM,
-                #user=None,
-                #team=user.team,
-                #source=TicketSource.FAIL_TO_TEAM_POOL,
-                #amount=1,
-                #ref_type="reservation_miss_team",
-                #ref_id=str(r.id),
-            #)
+        if getattr(user, "team", None):
+            # team +1（get_or_createで二重防止）
+            create_fail_to_team_pool(user.team, r.id)
 
 
+# =========================
+# 予約作成
+# =========================
 
 @login_required
 def new_reservation(request):
     if request.method == "POST":
-        form = ReservationForm(request.POST)
+        form = ReservationForm(request.POST, user=request.user)
         if form.is_valid():
             reservation = form.save(commit=False)
             reservation.user = request.user
+            reservation.team = getattr(request.user, "team", None)
             reservation.save()
+
+            create_reservation_deposit(request.user, reservation.id)
             return redirect("dashboard")
     else:
-        form = ReservationForm()
+        form = ReservationForm(user=request.user)
 
     return render(request, "reservations/new.html", {"form": form})
 
+
+
+# =========================
+# ダッシュボード
+# =========================
 
 @login_required
 def dashboard(request):
     mark_missed_reservations(request.user)
 
-    reservations = Reservation.objects.filter(
-        user=request.user,
-        start_at__date=timezone.localdate(),
-    ).order_by("start_at")
+    now = timezone.now()
+    team = getattr(request.user, "team", None)
+
+    last = request.user.last_recovery_at
+    cooldown_ok = not (last and last > (now - timedelta(days=7)))
+
+    recovery_available = bool(team) and cooldown_ok
+
+
+    reservations = (
+        Reservation.objects.filter(
+            user=request.user,
+            start_at__date=timezone.localdate(),
+        )
+        .order_by("start_at")
+    )
 
     reservation_items = []
     for r in reservations:
@@ -108,10 +109,11 @@ def dashboard(request):
             "can_checkin": can_checkin(r) and (r.checkin_at is None),
             "missed": r.status == "missed",
             "recovery": r.status == "recovery",
+            "recovery_available": recovery_available,  
         })
 
-    team = getattr(request.user, "team", None)
 
+    team = getattr(request.user, "team", None)
     timeline_posts = []
     liked_post_ids = set()
 
@@ -130,21 +132,30 @@ def dashboard(request):
             .values_list("post_id", flat=True)
         )
 
-    return render(request, "dashboard.html", {
-        "reservation_items": reservation_items,
-        "timeline_posts": timeline_posts,
-        "team": team,
-        "liked_post_ids": liked_post_ids,
-    })
+    return render(
+        request,
+        "dashboard.html",
+        {
+            "reservation_items": reservation_items,
+            "timeline_posts": timeline_posts,
+            "team": team,
+            "liked_post_ids": liked_post_ids,
+        },
+    )
 
 
+# =========================
+# チェックイン
+# =========================
 
+@require_POST
 @login_required
 def checkin_reservation(request, reservation_id):
-    reservation = get_object_or_404(Reservation, id=reservation_id, user=request.user)
-
-    if request.method != "POST":
-        return redirect("dashboard")
+    reservation = get_object_or_404(
+        Reservation,
+        id=reservation_id,
+        user=request.user,
+    )
 
     if not can_checkin(reservation):
         return redirect("/?error=checkin_time")
@@ -158,13 +169,25 @@ def checkin_reservation(request, reservation_id):
 
 @login_required
 def action_reservation(request, reservation_id):
-    reservation = get_object_or_404(Reservation, id=reservation_id, user=request.user)
+    reservation = get_object_or_404(
+        Reservation,
+        id=reservation_id,
+        user=request.user,
+    )
 
     if reservation.checkin_at is None:
         return redirect("/?error=need_checkin")
 
-    return render(request, "reservations/action.html", {"reservation": reservation})
+    return render(
+        request,
+        "reservations/action.html",
+        {"reservation": reservation},
+    )
 
+
+# =========================
+# 完了処理
+# =========================
 
 @login_required
 def complete_reservation(request, reservation_id):
@@ -177,9 +200,8 @@ def complete_reservation(request, reservation_id):
     if reservation.status == "completed" or reservation.completed_at is not None:
         return redirect("dashboard")
 
-
     if reservation.checkin_at is None:
-        return redirect("dashboard")
+        return redirect("/?error=need_checkin")
 
     if request.method == "POST":
         form = ReservationCompleteForm(request.POST, instance=reservation)
@@ -188,36 +210,39 @@ def complete_reservation(request, reservation_id):
             r.status = "completed"
             r.completed_at = timezone.now()
             r.save(update_fields=[
-                "activity_type", "memo", "share_detail",
-                "status", "completed_at", "updated_at"
+                "activity_type",
+                "memo",
+                "share_detail",
+                "status",
+                "completed_at",
+                "updated_at",
             ])
+
+            # A案：達成で +2（返却+1 ＋運営+1）
+            create_deposit_return(request.user, r.id)
+            create_admin_bonus(request.user, r.id)
 
             create_timeline_post_if_needed(r)
 
-            return redirect("timeline_list")
-
-
-            #_create_ticket_tx_safe(
-                #owner_type=TicketTransaction.OwnerType.USER,
-               # user=request.user,
-               # team=None,
-                #source=TicketSource.DEPOSIT_RETURN,  
-               # amount=2,
-                #ref_type="reservation_complete_user",
-               # ref_id=str(reservation.id),
-            #)
-
-            #return redirect("dashboard")
+            return redirect("dashboard")
     else:
         form = ReservationCompleteForm(instance=reservation)
 
     return render(
         request,
         "reservations/record.html",
-        {"reservation": reservation, "form": form},
+        {
+            "reservation": reservation,
+            "form": form,
+        },
     )
 
 
+# =========================
+# リカバリー
+# =========================
+
+@require_POST
 @login_required
 def use_recovery(request, reservation_id):
     reservation = get_object_or_404(
@@ -226,48 +251,30 @@ def use_recovery(request, reservation_id):
         user=request.user,
     )
 
-    if request.method != "POST":
-        return redirect("dashboard")
-
-
     if reservation.status != "missed":
         return redirect("dashboard")
 
-  
     if reservation.used_recovery:
         return redirect("dashboard")
 
     user = request.user
+    team = getattr(user, "team", None)
 
+    if team is None:
+        return redirect("/?error=no_team")
+
+    # 週1制限
     if user.last_recovery_at:
         one_week_ago = timezone.now() - timedelta(days=7)
         if user.last_recovery_at > one_week_ago:
-            return redirect("dashboard")
+            return redirect("/?error=recovery_cooldown")
 
     reservation.status = "recovery"
     reservation.used_recovery = True
     reservation.save(update_fields=["status", "used_recovery", "updated_at"])
 
-    _create_ticket_tx_safe(
-        owner_type=TicketTransaction.OwnerType.USER,
-        user=user,
-        team=None,
-        source=TicketSource.DEPOSIT_RETURN,
-        amount=1,
-        ref_type="reservation_recovery_user",
-        ref_id=str(reservation.id),
-    )
-
-    if getattr(user, "team", None):
-        _create_ticket_tx_safe(
-            owner_type=TicketTransaction.OwnerType.TEAM,
-            user=None,
-            team=user.team,
-            source=TicketSource.DEPOSIT_RETURN,
-            amount=-1,
-            ref_type="reservation_recovery_team",
-            ref_id=str(reservation.id),
-        )
+    # A案：team -1 & user +1
+    create_recovery(user, team, ref_id=reservation.id)
 
     user.last_recovery_at = timezone.now()
     user.save(update_fields=["last_recovery_at"])
@@ -275,10 +282,13 @@ def use_recovery(request, reservation_id):
     return redirect("dashboard")
 
 
+# =========================
+# タイムライン投稿
+# =========================
+
 def create_timeline_post_if_needed(reservation):
     if hasattr(reservation, "timeline_post"):
         return reservation.timeline_post
-
 
     team = getattr(reservation.user, "team", None)
     if team is None:

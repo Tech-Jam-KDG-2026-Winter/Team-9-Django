@@ -13,8 +13,11 @@
       {% if item.reservation.status == "completed" %}
         <span>達成</span>
 
-      {% elif item.reservation.status == "recovery" %}
-        <span>リカバリー済み</span>
+      {% elif item.reservation.used_recovery %}
+        <span>リカバリー使用済み</span>
+
+      {% elif item.reservation.status == "missed" %}
+        <span>未達成</span>
 
       {% elif item.checked_in %}
         <span>チェックイン済み</span>
@@ -30,12 +33,17 @@
       {% endif %}
 
       {# リカバリー使用ボタン #}
-      {% if item.reservation.status == "missed" and not item.reservation.used_recovery %}
-        <form method="post" action="{% url 'reservation_recovery' item.reservation.id %}">
-          {% csrf_token %}
-          <button type="submit">リカバリー使用</button>
-        </form>
+      {% if team and item.reservation.status == "missed" and not item.reservation.used_recovery %}
+        {% if item.recovery_available %}
+          <form method="post" action="{% url 'reservation_recovery' item.reservation.id %}">
+            {% csrf_token %}
+            <button type="submit">リカバリー使用</button>
+          </form>
+        {% else %}
+          <span>リカバリー使用不可（1週間に1回まで）</span>
+        {% endif %}
       {% endif %}
+
     </div>
   {% endfor %}
 {% else %}
