@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from .services import assign_team_for_user, get_user_ticket_balance, get_team_pool_balance,grant_initial_tickets
 
@@ -87,6 +87,7 @@ def login_view(request):
 
     # 念のため
     return JsonResponse({"error": "method not allowed"}, status=405)
+
 
 @csrf_protect
 @require_POST

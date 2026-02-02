@@ -67,6 +67,7 @@ class TicketSource(models.TextChoices):
     DEPOSIT_RETURN = "DEPOSIT_RETURN", "Deposit return"
     ADMIN_BONUS = "ADMIN_BONUS", "Admin bonus"
     FAIL_TO_TEAM_POOL = "FAIL_TO_TEAM_POOL", "Fail to team pool"
+    RECOVERY = "RECOVERY", "Recovery"
 
 class TicketTransaction(models.Model):
     class OwnerType(models.TextChoices):
