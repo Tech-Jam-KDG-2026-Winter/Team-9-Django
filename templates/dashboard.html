@@ -1,20 +1,54 @@
-
-
 <h2>ホーム</h2>
 <h1>今日の予約</h1>
 
-{% for item in reservation_items %}
-  <div>
-    <p>{{ item.reservation.start_at }}</p>
+{% if reservation_items %}
+  {% for item in reservation_items %}
+    <div>
+      <p>{{ item.reservation.start_at }}</p>
 
-    {% if item.completed %}
-      <span>達成</span>
-    {% elif item.checked_in %}
-      <span>チェックイン済み</span>
-    {% elif item.can_checkin %}
-      ...チェックインボタン...
-    {% else %}
-      <span>まだ</span>
-    {% endif %}
-  </div>
-{% endfor %}
+      {% if item.reservation.status == "completed" %}
+        <span>達成</span>
+
+      {% elif item.reservation.status == "recovery" %}
+        <span>リカバリー済み</span>
+
+      {% elif item.checked_in %}
+        <span>チェックイン済み</span>
+
+      {% elif item.can_checkin %}
+        <form method="post" action="{% url 'reservation_checkin' item.reservation.id %}">
+          {% csrf_token %}
+          <button type="submit">チェックイン</button>
+        </form>
+
+      {% else %}
+        <span>まだ</span>
+      {% endif %}
+
+      {# リカバリー使用ボタン #}
+      {% if item.reservation.status == "missed" and not item.reservation.used_recovery %}
+        <form method="post" action="{% url 'reservation_recovery' item.reservation.id %}">
+          {% csrf_token %}
+          <button type="submit">リカバリー使用</button>
+        </form>
+      {% endif %}
+    </div>
+  {% endfor %}
+{% else %}
+  <p>今日の予約はありません</p>
+{% endif %}
+
+
+<h2>チームタイムライン</h2>
+{% if team %}
+  <p>チーム：{{ team.name|default:"名無しチーム" }}</p>
+
+  {% for post in timeline_posts %}
+    {% include "timeline/_post.html" with post=post %}
+  {% empty %}
+    <p>まだ投稿はありません</p>
+  {% endfor %}
+{% else %}
+  <p>チーム未所属のため表示できません</p>
+{% endif %}
+

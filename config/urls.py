@@ -10,4 +10,5 @@ urlpatterns = [
     path("", views.dashboard, name="dashboard"),
     path("auth/", include("apps.accounts.urls")),
     path("reservations/", include("apps.reservations.urls")),
+    path("timeline/", include("apps.timeline.urls")),
 ]
