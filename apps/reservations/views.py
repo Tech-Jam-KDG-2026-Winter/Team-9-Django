@@ -59,18 +59,17 @@ def mark_missed_reservations(user):
 @login_required
 def new_reservation(request):
     if request.method == "POST":
-        form = ReservationForm(request.POST)
+        form = ReservationForm(request.POST, user=request.user)
         if form.is_valid():
             reservation = form.save(commit=False)
             reservation.user = request.user
-            reservation.team = getattr(request.user, "team", None)  # ★ここ
+            reservation.team = getattr(request.user, "team", None)
             reservation.save()
 
             create_reservation_deposit(request.user, reservation.id)
-
             return redirect("dashboard")
     else:
-        form = ReservationForm()
+        form = ReservationForm(user=request.user)
 
     return render(request, "reservations/new.html", {"form": form})
 

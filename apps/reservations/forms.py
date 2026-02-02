@@ -1,4 +1,7 @@
+from datetime import timedelta
 from django import forms
+from django.utils import timezone
+
 from .models import Reservation
 
 
@@ -9,6 +12,52 @@ class ReservationForm(forms.ModelForm):
         widgets = {
             "start_at": forms.DateTimeInput(attrs={"type": "datetime-local"})
         }
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user  # ★追加
+
+    def clean_start_at(self):
+        start_at = self.cleaned_data["start_at"]
+        user = self.user
+
+        if user is None:
+            return start_at  # 念のため（通常は通らない）
+
+        # datetime-local対策（naive → aware）
+        if timezone.is_naive(start_at):
+            start_at = timezone.make_aware(
+                start_at,
+                timezone.get_current_timezone()
+            )
+
+        # ① 1日2枠まで（ユーザー単位）
+        day = timezone.localdate(start_at)
+        day_count = Reservation.objects.filter(
+            user=user,
+            start_at__date=day,
+        ).count()
+
+        if day_count >= 2:
+            raise forms.ValidationError("予約は1日2枠までです。")
+
+        # ② 前後3時間空ける（ユーザー単位／日またぎも有効）
+        lower = start_at - timedelta(hours=3)
+        upper = start_at + timedelta(hours=3)
+
+        conflict_exists = Reservation.objects.filter(
+            user=user,
+            start_at__gt=lower,
+            start_at__lt=upper,
+        ).exists()
+
+        if conflict_exists:
+            raise forms.ValidationError(
+                "予約は前後3時間以上空けてください。"
+            )
+
+        return start_at
+
 
 class ReservationCompleteForm(forms.ModelForm):
     class Meta:
