@@ -7,6 +7,7 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from .services import assign_team_for_user, get_user_ticket_balance, get_team_pool_balance,grant_initial_tickets
 
+from django.shortcuts import render
 
 User = get_user_model()
 
@@ -60,24 +61,32 @@ def signup(request):
     }, status=201)
 
 @csrf_protect
-@require_POST
 def login_view(request):
-    data = _get_body(request)
-    email = data.get("email")
-    password = data.get("password")
+    # ✅ GET：ログイン画面を表示
+    if request.method == "GET":
+        return render(request, "accounts/login.html")
 
-    user = authenticate(request, email=email, password=password)
-    if user is None:
-        return JsonResponse({"error": "invalid credentials"}, status=400)
+    # ✅ POST：JSONでログイン処理
+    if request.method == "POST":
+        data = _get_body(request)
+        email = data.get("email")
+        password = data.get("password")
 
-    login(request, user)
-    return JsonResponse({
-        "id": user.id,
-        "user_id": str(user.user_id),
-        "email": user.email,
-        "display_name": user.display_name,
-        "team_id": user.team_id,
-    }, status=200)
+        user = authenticate(request, email=email, password=password)
+        if user is None:
+            return JsonResponse({"error": "invalid credentials"}, status=400)
+
+        login(request, user)
+        return JsonResponse({
+            "id": user.id,
+            "user_id": str(user.user_id),
+            "email": user.email,
+            "display_name": user.display_name,
+            "team_id": user.team_id,
+        }, status=200)
+
+    # 念のため
+    return JsonResponse({"error": "method not allowed"}, status=405)
 
 @csrf_protect
 @require_POST

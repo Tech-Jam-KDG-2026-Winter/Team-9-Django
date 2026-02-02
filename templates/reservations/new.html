@@ -1,3 +1,7 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
 <h1>予約作成</h1>
 
 <form method="post">
@@ -5,3 +9,5 @@
   {{ form.as_p }}
   <button type="submit">予約する</button>
 </form>
+
+{% endblock %}
