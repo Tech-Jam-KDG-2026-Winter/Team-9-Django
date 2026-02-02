@@ -85,8 +85,13 @@ def dashboard(request):
     mark_missed_reservations(request.user)
 
     now = timezone.now()
+    team = getattr(request.user, "team", None)
+
     last = request.user.last_recovery_at
-    recovery_available = not (last and last > (now - timedelta(days=7)))
+    cooldown_ok = not (last and last > (now - timedelta(days=7)))
+
+    recovery_available = bool(team) and cooldown_ok
+
 
     reservations = (
         Reservation.objects.filter(
@@ -105,7 +110,7 @@ def dashboard(request):
             "can_checkin": can_checkin(r) and (r.checkin_at is None),
             "missed": r.status == "missed",
             "recovery": r.status == "recovery",
-            "recovery_available": recovery_available,  # ★ここ
+            "recovery_available": recovery_available,  
         })
 
 
