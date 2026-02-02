@@ -6,6 +6,10 @@ from datetime import timedelta
 from .forms import ReservationForm
 from .models import Reservation
 
+from apps.accounts.models import TicketTransaction, TicketSource, UserProfiles
+from apps.timeline.models import TimelinePost, Like
+from django.db.models import Count
+
 
 def can_checkin(reservation):
     now = timezone.now()
@@ -43,7 +47,33 @@ def dashboard(request):
             "can_checkin": can_checkin(r) and r.checkin_at is None,
         })
 
-    return render(request, "dashboard.html", {"reservation_items": reservation_items})
+    team = getattr(request.user, "team", None)
+
+    timeline_posts = []
+    liked_post_ids = set()
+
+    if team:
+        timeline_posts = (
+            TimelinePost.objects
+            .filter(team=team)
+            .select_related("reservation", "user")
+            .annotate(like_count=Count("likes"))
+            .order_by("-created_at")[:20]
+        )
+
+        liked_post_ids = set(
+            Like.objects
+            .filter(user=request.user, post__team=team)
+            .values_list("post_id", flat=True)
+        )
+
+    return render(request, "dashboard.html", {
+        "reservation_items": reservation_items,
+        "timeline_posts": timeline_posts,
+        "team": team,
+        "liked_post_ids": liked_post_ids,
+    })
+
 
 
 @login_required
