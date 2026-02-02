@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from .services import assign_team_for_user, get_user_ticket_balance, get_team_pool_balance,grant_initial_tickets
 
@@ -60,8 +60,11 @@ def signup(request):
     }, status=201)
 
 @csrf_protect
-@require_POST
+@require_http_methods(["GET", "POST"])
 def login_view(request):
+    if request.method == "GET":
+        return JsonResponse({"ok": True, "message": "login page placeholder"}, status=200)
+
     data = _get_body(request)
     email = data.get("email")
     password = data.get("password")
@@ -78,6 +81,7 @@ def login_view(request):
         "display_name": user.display_name,
         "team_id": user.team_id,
     }, status=200)
+
 
 @csrf_protect
 @require_POST
