@@ -37,3 +37,18 @@
 {% else %}
   <p>今日の予約はありません</p>
 {% endif %}
+
+
+<h2>チームタイムライン</h2>
+{% if team %}
+  <p>チーム：{{ team.name|default:"名無しチーム" }}</p>
+
+  {% for post in timeline_posts %}
+    {% include "timeline/_post.html" with post=post %}
+  {% empty %}
+    <p>まだ投稿はありません</p>
+  {% endfor %}
+{% else %}
+  <p>チーム未所属のため表示できません</p>
+{% endif %}
+

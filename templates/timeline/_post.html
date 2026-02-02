@@ -1,0 +1,13 @@
+<div style="border:1px solid #ccc; padding:10px; margin:8px 0;">
+  <p>達成：{{ post.created_at }}</p>
+
+  <p>種別：{{ post.reservation.get_activity_type_display }}</p>
+
+  {% if post.visibility == "with_detail" and post.reservation.memo %}
+    <p>メモ：{{ post.reservation.memo }}</p>
+  {% elif post.visibility == "with_detail" %}
+    <p>メモ：なし</p>
+  {% else %}
+    <p>詳細なし</p>
+  {% endif %}
+</div>

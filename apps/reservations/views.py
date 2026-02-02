@@ -1,9 +1,14 @@
-from django.shortcuts import render, redirect,get_object_or_404
-from django.contrib.auth.decorators import login_required
 from datetime import timedelta
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
+
 from .forms import ReservationForm, ReservationCompleteForm
 from .models import Reservation
+
+from apps.accounts.models import TicketTransaction, TicketSource, UserProfiles
+from apps.timeline.models import TimelinePost
 
 
 def can_checkin(reservation):
@@ -14,6 +19,58 @@ def can_checkin(reservation):
         start = timezone.make_aware(start, timezone.get_current_timezone())
 
     return (start - timedelta(minutes=10)) <= now <= (start + timedelta(minutes=30))
+
+
+# NOTE: TicketTransaction連携は Backend(1) 実装確定後に有効化予定
+def _create_ticket_tx_safe(*, owner_type, user, team, source, amount, ref_type, ref_id):
+
+    TicketTransaction.objects.get_or_create(
+        owner_type=owner_type,
+        user=user,
+        team=team,
+        source=source,
+        ref_type=ref_type,
+        ref_id=ref_id,
+        defaults={"amount": amount},
+    )
+
+
+def mark_missed_reservations(user):
+    now = timezone.now()
+    deadline = now - timedelta(minutes=30)
+
+    qs = Reservation.objects.filter(
+        user=user,
+        status="scheduled",
+        completed_at__isnull=True,
+        start_at__lt=deadline,
+    )
+
+    for r in qs:
+        r.status = "missed"
+        r.save(update_fields=["status", "updated_at"])
+
+        _create_ticket_tx_safe(
+            owner_type=TicketTransaction.OwnerType.USER,
+            user=user,
+            team=None,
+            source=TicketSource.FAIL_TO_TEAM_POOL,
+            amount=-1,
+            ref_type="reservation_miss_user",
+            ref_id=str(r.id),
+        )
+
+        #if getattr(user, "team", None):
+            #_create_ticket_tx_safe(
+               # owner_type=TicketTransaction.OwnerType.TEAM,
+                #user=None,
+                #team=user.team,
+                #source=TicketSource.FAIL_TO_TEAM_POOL,
+                #amount=1,
+                #ref_type="reservation_miss_team",
+                #ref_id=str(r.id),
+            #)
+
 
 
 @login_required
@@ -30,37 +87,43 @@ def new_reservation(request):
 
     return render(request, "reservations/new.html", {"form": form})
 
-def mark_missed_reservations(user):
-    now = timezone.now()
-    deadline = now - timedelta(minutes=30)
 
-    qs = Reservation.objects.filter(
-        user=user,
-        status="scheduled",
-        completed_at__isnull=True,
-        start_at__lt=deadline,
-    )
-
-    qs.update(status="missed", updated_at=now)
-
+@login_required
 def dashboard(request):
     mark_missed_reservations(request.user)
 
     reservations = Reservation.objects.filter(
         user=request.user,
         start_at__date=timezone.localdate(),
-    )
+    ).order_by("start_at")
 
     reservation_items = []
     for r in reservations:
         reservation_items.append({
             "reservation": r,
-            "completed": r.status == "completed" or r.completed_at is not None,
+            "completed": (r.status == "completed") or (r.completed_at is not None),
             "checked_in": r.checkin_at is not None,
-            "can_checkin": can_checkin(r) and r.checkin_at is None,
+            "can_checkin": can_checkin(r) and (r.checkin_at is None),
+            "missed": r.status == "missed",
+            "recovery": r.status == "recovery",
         })
 
-    return render(request, "dashboard.html", {"reservation_items": reservation_items})
+    team = getattr(request.user, "team", None)
+
+    timeline_posts = []
+    if team:
+        timeline_posts = (
+            TimelinePost.objects
+            .filter(team=team)
+            .select_related("reservation", "user")
+            .order_by("-created_at")[:20]
+        )
+
+    return render(request, "dashboard.html", {
+        "reservation_items": reservation_items,
+        "timeline_posts": timeline_posts,
+        "team": team,
+    })
 
 
 @login_required
@@ -101,6 +164,7 @@ def complete_reservation(request, reservation_id):
     if reservation.status == "completed" or reservation.completed_at is not None:
         return redirect("dashboard")
 
+
     if reservation.checkin_at is None:
         return redirect("dashboard")
 
@@ -114,7 +178,23 @@ def complete_reservation(request, reservation_id):
                 "activity_type", "memo", "share_detail",
                 "status", "completed_at", "updated_at"
             ])
-            return redirect("dashboard")
+
+            create_timeline_post_if_needed(r)
+
+            return redirect("timeline_list")
+
+
+            #_create_ticket_tx_safe(
+                #owner_type=TicketTransaction.OwnerType.USER,
+               # user=request.user,
+               # team=None,
+                #source=TicketSource.DEPOSIT_RETURN,  
+               # amount=2,
+                #ref_type="reservation_complete_user",
+               # ref_id=str(reservation.id),
+            #)
+
+            #return redirect("dashboard")
     else:
         form = ReservationCompleteForm(instance=reservation)
 
@@ -123,6 +203,7 @@ def complete_reservation(request, reservation_id):
         "reservations/record.html",
         {"reservation": reservation, "form": form},
     )
+
 
 @login_required
 def use_recovery(request, reservation_id):
@@ -135,24 +216,80 @@ def use_recovery(request, reservation_id):
     if request.method != "POST":
         return redirect("dashboard")
 
+
     if reservation.status != "missed":
         return redirect("dashboard")
 
+  
     if reservation.used_recovery:
         return redirect("dashboard")
 
-    profile = request.user
+    user = request.user
 
-    if profile.last_recovery_at:
+    if user.last_recovery_at:
         one_week_ago = timezone.now() - timedelta(days=7)
-        if profile.last_recovery_at > one_week_ago:
+        if user.last_recovery_at > one_week_ago:
             return redirect("dashboard")
 
     reservation.status = "recovery"
     reservation.used_recovery = True
     reservation.save(update_fields=["status", "used_recovery", "updated_at"])
 
-    profile.last_recovery_at = timezone.now()
-    profile.save(update_fields=["last_recovery_at"])
+    _create_ticket_tx_safe(
+        owner_type=TicketTransaction.OwnerType.USER,
+        user=user,
+        team=None,
+        source=TicketSource.DEPOSIT_RETURN,
+        amount=1,
+        ref_type="reservation_recovery_user",
+        ref_id=str(reservation.id),
+    )
+
+    if getattr(user, "team", None):
+        _create_ticket_tx_safe(
+            owner_type=TicketTransaction.OwnerType.TEAM,
+            user=None,
+            team=user.team,
+            source=TicketSource.DEPOSIT_RETURN,
+            amount=-1,
+            ref_type="reservation_recovery_team",
+            ref_id=str(reservation.id),
+        )
+
+    user.last_recovery_at = timezone.now()
+    user.save(update_fields=["last_recovery_at"])
 
     return redirect("dashboard")
+
+
+def create_timeline_post_if_needed(reservation):
+    if hasattr(reservation, "timeline_post"):
+        return reservation.timeline_post
+
+    team = reservation.team
+
+    if team is None:
+        team = getattr(reservation.user, "team", None)
+
+        if team is None:
+            profile = (
+                UserProfiles.objects
+                .select_related("team")
+                .filter(user_id=reservation.user.id)
+                .first()
+            )
+            if profile and profile.team:
+                team = profile.team
+
+        if team:
+            reservation.team = team
+            reservation.save(update_fields=["team", "updated_at"])
+
+    visibility = "with_detail" if reservation.share_detail else "summary_only"
+
+    return TimelinePost.objects.create(
+        user=reservation.user,
+        team=team,
+        reservation=reservation,
+        visibility=visibility,
+    )
