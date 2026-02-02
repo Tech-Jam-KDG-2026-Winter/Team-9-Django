@@ -3,16 +3,12 @@
 
   <p>種別：{{ post.reservation.get_activity_type_display }}</p>
 
-  {% if post.visibility == "with_detail" and post.reservation.memo %}
-    <p>メモ：{{ post.reservation.memo }}</p>
-  {% elif post.visibility == "with_detail" %}
-    <p>メモ：なし</p>
-  {% else %}
-    <p>詳細なし</p>
-  {% endif %}
-
   {% if post.visibility == "with_detail" %}
-    <p>メモ：{{ post.reservation.memo }}</p>
+    {% if post.reservation.memo %}
+      <p>メモ：{{ post.reservation.memo }}</p>
+    {% else %}
+      <p>メモ：なし</p>
+    {% endif %}
   {% else %}
     <p>詳細なし</p>
   {% endif %}

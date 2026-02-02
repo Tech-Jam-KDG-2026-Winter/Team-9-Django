@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from .forms import ReservationForm, ReservationCompleteForm
 from .models import Reservation
@@ -278,24 +279,14 @@ def create_timeline_post_if_needed(reservation):
     if hasattr(reservation, "timeline_post"):
         return reservation.timeline_post
 
-    team = reservation.team
 
+    team = getattr(reservation.user, "team", None)
     if team is None:
-        team = getattr(reservation.user, "team", None)
+        return None
 
-        if team is None:
-            profile = (
-                UserProfiles.objects
-                .select_related("team")
-                .filter(user_id=reservation.user.id)
-                .first()
-            )
-            if profile and profile.team:
-                team = profile.team
-
-        if team:
-            reservation.team = team
-            reservation.save(update_fields=["team", "updated_at"])
+    if reservation.team_id != team.id:
+        reservation.team = team
+        reservation.save(update_fields=["team", "updated_at"])
 
     visibility = "with_detail" if reservation.share_detail else "summary_only"
 

@@ -1,26 +1,25 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect,get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
+from django.views.decorators.http import require_POST
 from .models import TimelinePost, Like
-from apps.accounts.models import UserProfiles
 
 @login_required
 def timeline_list(request):
     return redirect("dashboard")
 
-@login_required
-def toggle_like(request, post_id):
-    if request.method != "POST":
-        return redirect("dashboard")
 
+@login_required
+@require_POST
+def toggle_like(request, post_id):
     post = get_object_or_404(TimelinePost, id=post_id)
 
-
-    profile = UserProfiles.objects.select_related("team").filter(user_id=request.user.id).first()
-    if not profile or not profile.team or post.team_id != profile.team_id:
+    if post.user_id == request.user.id:
         return redirect("dashboard")
 
-    like, created = Like.objects.get_or_create(user=request.user, post=post)
-    if not created:
+    like = Like.objects.filter(user=request.user, post=post).first()
+    if like:
         like.delete()
+    else:
+        Like.objects.create(user=request.user, post=post)
 
     return redirect("dashboard")
