@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard centered-view">
+  <div class="card-container">
+    <h1 class="gradient-text">新規登録</h1>
+    <p>チームに参加して運動を始めましょう</p>
+
+    <div id="signupError" class="error" style="display: none; margin-bottom: 15px; text-align: center;"></div>
+
+    <form id="signupForm" class="custom-form">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label>表示名</label>
+        <input type="text" name="display_name" class="form-input-field" placeholder="ユーザー名" required>
+      </div>
+
+      <div class="form-group">
+        <label>メールアドレス</label>
+        <input type="email" name="email" class="form-input-field" placeholder="example@mail.com" required>
+      </div>
+
+      <div class="form-group">
+        <label>パスワード</label>
+        <input type="password" name="password" class="form-input-field" placeholder="8文字以上" required>
+      </div>
+
+      <button type="submit" class="reserve-btn full-width" style="margin-top: 30px;">
+        アカウントを作成
+      </button>
+    </form>
+
+    <p style="margin-top: 20px; font-size: 14px; color: #666;">
+      すでにアカウントをお持ちですか？
+      <a href="{% url 'login' %}" style="color: var(--gradient-1); text-decoration: none; font-weight: 600;">ログイン</a>
+    </p>
+  </div>
+</div>
+
+<script>
+  document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const errorDiv = document.getElementById('signupError');
+    errorDiv.style.display = 'none';
+
+    // フォームデータの取得
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      const response = await fetch(window.location.href, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': data.csrfmiddlewaretoken
+        },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // 登録成功 -> ダッシュボードへ
+        window.location.href = "{% url 'dashboard' %}";
+      } else {
+        // サーバーからのエラーを表示
+        errorDiv.textContent = result.error || "登録に失敗しました";
+        errorDiv.style.display = 'block';
+      }
+    } catch (err) {
+      errorDiv.textContent = "ネットワークエラーが発生しました";
+      errorDiv.style.display = 'block';
+    }
+  });
+</script>
+{% endblock %}
