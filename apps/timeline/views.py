@@ -12,7 +12,7 @@ def timeline_list(request):
     ).select_related('user', 'reservation').annotate(
         # ページを開いた時のために、各投稿のいいね数を数えておく
         calculated_count=Count('likes')
-    ).order_by('-created_at')
+    ).order_by('-created_at')[:20]
     
     user_liked_post_ids = Like.objects.filter(user=request.user).values_list('post_id', flat=True)
 

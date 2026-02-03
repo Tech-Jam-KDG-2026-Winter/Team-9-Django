@@ -2,13 +2,15 @@
 {% block content %}
 <div class="dashboard">
   <h2>ホーム</h2>
-  <h1 class="gradient-text">今日の予約</h1>
+  <h1 class="gradient-text">予約一覧</h1>
 
   <div class="reservation-list">
     {% for item in reservation_items %}
-    <div class="reservation-card">
+    <div class="reservation-card {% if not item.is_today %}future-card{% endif %}">
       <div class="res-info">
-        <span class="res-label">START</span>
+        <span class="res-label">
+          {% if item.is_today %}TODAY{% else %}FUTURE{% endif %}
+        </span>
         <div class="res-time">{{ item.reservation.start_at|date:"H:i" }}</div>
         <div class="res-date">{{ item.reservation.start_at|date:"n月j日" }}</div>
       </div>
