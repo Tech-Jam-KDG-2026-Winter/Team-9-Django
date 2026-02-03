@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/mypage.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="mypage">
+  <!-- Profile -->
+  <section class="profile">
+    <div class="avatar">👤</div>
+    <h1 class="name">{{ user.name }}</h1>
+    <p class="subtitle">起動を続けている仲間</p>
+  </section>
+
+  <!-- Stats -->
+  <section class="stats-grid">
+    <div class="stat-card stat-purple">
+      <p class="label">保有チケット</p>
+      <p class="value">{{ user.tickets }}</p>
+    </div>
+    <div class="stat-card stat-green">
+      <p class="label">累計達成</p>
+      <p class="value">{{ user.total_achievements }}</p>
+    </div>
+  </section>
+
+  <!-- Weekly progress -->
+  <section class="card weekly">
+    <div class="card-header">
+      <h2>今週の進捗</h2>
+      <span class="week">Week 3/4</span>
+    </div>
+
+    <div class="progress-row">
+      <span>あなたの達成率</span>
+      <span>{{ weekly.my_achievements }}/{{ weekly.my_reservations }}
+        ({{ weekly.progress_percent }}%)</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" style="width: {{ weekly.progress_percent }}%"></div>
+    </div>
+
+    <div class="notice notice-gold">
+      🏅 チーム完全達成週<br>
+      <span>1週連続で全員達成中！</span>
+    </div>
+    <div class="notice notice-purple">
+      💪 今週全員が達成すれば、全員に+1チケット獲得のチャンス！
+    </div>
+  </section>
+
+  <!-- Recovery -->
+  <section class="card recovery">
+    <div class="recovery-header">
+      <h2>救済（リカバリー）</h2>
+      <span class="recovery-status {{ user.recovery_available|yesno:'ok,ng' }}">
+        {{ user.recovery_available|yesno:'利用可能,使用済み' }}
+      </span>
+    </div>
+    <p class="muted">週1回の救済機能</p>
+    <p class="muted">没収回避のみ（ボーナスなし）</p>
+  </section>
+  
+  <section class="card actions">
+    <form action="{% url 'logout' %}" method="post">
+      {% csrf_token %}
+      <button class="btn btn-danger" type="submit">ログアウト</button>
+    </form>
+  </section>  
+</main>
+{% endblock %}

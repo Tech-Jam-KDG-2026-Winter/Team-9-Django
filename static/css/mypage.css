@@ -1,0 +1,127 @@
+body {
+    background: #f5f7ff;
+  }
+  
+  .mypage {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .profile {
+    text-align: center;
+    padding: 24px 0;
+  }
+  .avatar {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 12px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 32px;
+  }
+  .name { margin: 0; font-size: 22px; }
+  .subtitle { color: #6b7280; margin: 4px 0 0; }
+  
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .stat-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 18px;
+    border: 2px solid transparent;
+  }
+  .stat-card .label { color: #6b7280; margin: 0; }
+  .stat-card .value { font-size: 28px; margin: 6px 0 0; }
+  .stat-purple { border-color: #e9d5ff; }
+  .stat-purple .value { color: #8b5cf6; }
+  .stat-green { border-color: #bbf7d0; }
+  .stat-green .value { color: #16a34a; }
+  
+  .card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .week { color: #6b7280; }
+  
+  .progress-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #374151;
+  }
+  .progress-bar {
+    background: #e5e7eb;
+    height: 10px;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #111827;
+  }
+  
+  .notice {
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 14px;
+    margin-top: 10px;
+  }
+  .notice-gold {
+    background: #fff7e6;
+    border: 1px solid #facc15;
+    color: #92400e;
+  }
+  .notice-purple {
+    background: #f3e8ff;
+    border: 1px solid #c4b5fd;
+    color: #6b21a8;
+  }
+  
+  .recovery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .recovery-status.ok { color: #16a34a; font-weight: bold; }
+  .recovery-status.ng { color: #9ca3af; font-weight: bold; }
+  .muted { color: #6b7280; margin: 6px 0 0; }
+  
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .btn {
+    display: inline-block;
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .btn-danger {
+    background: #dc2626;
+    color: #fff;
+  }  
