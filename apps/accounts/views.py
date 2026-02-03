@@ -27,7 +27,7 @@ def csrf(request):
 @require_http_methods(["GET", "POST"])
 def signup(request):
     if request.method == "GET":
-        return JsonResponse({"ok": True, "message": "signup page placeholder"}, status=200)
+        return render(request, "accounts/signup.html")
 
     data = _get_body(request)
     email = data.get("email")
