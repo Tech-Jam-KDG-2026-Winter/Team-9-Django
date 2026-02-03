@@ -197,7 +197,6 @@ def complete_reservation(request, reservation_id):
             r = form.save(commit=False)
             r.status = "completed"
             r.completed_at = timezone.now()
-<<<<<<< Updated upstream
             r.save(update_fields=[
                 "activity_type",
                 "memo",
@@ -212,10 +211,6 @@ def complete_reservation(request, reservation_id):
 
             create_timeline_post_if_needed(r)
 
-=======
-            r.save()
-            # ...ボーナス付与などの処理...
->>>>>>> Stashed changes
             return redirect("dashboard")
     else:
         form = ReservationCompleteForm(instance=reservation)

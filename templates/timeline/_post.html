@@ -1,3 +1,6 @@
+{% extends 'base.html' %}
+
+{% block content %}
 <div style="border:1px solid #ccc; padding:10px; margin:8px 0;">
   <p>達成：{{ post.created_at }}</p>
 
@@ -20,3 +23,5 @@
     </button>
   </form>
 </div>
+
+{% endblock %}
