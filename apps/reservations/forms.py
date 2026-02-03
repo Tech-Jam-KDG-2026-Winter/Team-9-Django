@@ -30,30 +30,30 @@ class ReservationForm(forms.ModelForm):
                 timezone.get_current_timezone()
             )
 
-        # 1日2枠まで
-        day = timezone.localdate(start_at)
-        day_count = Reservation.objects.filter(
-            user=user,
-            start_at__date=day,
-        ).count()
+        # # ① 1日2枠まで（ユーザー単位）
+        # day = timezone.localdate(start_at)
+        # day_count = Reservation.objects.filter(
+        #     user=user,
+        #     start_at__date=day,
+        # ).count()
 
-        if day_count >= 2:
-            raise forms.ValidationError("予約は1日2枠までです。")
+        # if day_count >= 2:
+        #     raise forms.ValidationError("予約は1日2枠までです。")
 
-        #前後3時間空ける（日またぎも有効）
-        lower = start_at - timedelta(hours=3)
-        upper = start_at + timedelta(hours=3)
+        # # ② 前後3時間空ける（ユーザー単位／日またぎも有効）
+        # lower = start_at - timedelta(hours=3)
+        # upper = start_at + timedelta(hours=3)
 
-        conflict_exists = Reservation.objects.filter(
-            user=user,
-            start_at__gt=lower,
-            start_at__lt=upper,
-        ).exists()
+        # conflict_exists = Reservation.objects.filter(
+        #     user=user,
+        #     start_at__gt=lower,
+        #     start_at__lt=upper,
+        # ).exists()
 
-        if conflict_exists:
-            raise forms.ValidationError(
-                "予約は前後3時間以上空けてください。"
-            )
+        # if conflict_exists:
+        #     raise forms.ValidationError(
+        #         "予約は前後3時間以上空けてください。"
+        #     )
 
         return start_at
 
@@ -62,6 +62,11 @@ class ReservationCompleteForm(forms.ModelForm):
     class Meta:
         model = Reservation
         fields = ["activity_type", "memo", "share_detail"]
+        widgets = {
+            'activity_type': forms.Select(attrs={'class': 'form-input-field'}),
+            'memo': forms.Textarea(attrs={'class': 'form-input-field', 'rows': 3}),
+            'share_detail': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
+        }
 
     def clean_activity_type(self):
         v = self.cleaned_data.get("activity_type")

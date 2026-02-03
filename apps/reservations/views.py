@@ -73,7 +73,6 @@ def new_reservation(request):
     return render(request, "reservations/new.html", {"form": form})
 
 
-
 # =========================
 # ダッシュボード
 # =========================
@@ -201,7 +200,8 @@ def complete_reservation(request, reservation_id):
 
     if reservation.checkin_at is None:
         return redirect("/?error=need_checkin")
-
+    reservation = get_object_or_404(Reservation, id=reservation_id, user=request.user)
+    
     if request.method == "POST":
         form = ReservationCompleteForm(request.POST, instance=reservation)
         if form.is_valid():
@@ -226,14 +226,10 @@ def complete_reservation(request, reservation_id):
     else:
         form = ReservationCompleteForm(instance=reservation)
 
-    return render(
-        request,
-        "reservations/record.html",
-        {
-            "reservation": reservation,
-            "form": form,
-        },
-    )
+    return render(request, "reservations/record.html", {
+        "reservation": reservation,
+        "form": form,
+    })
 
 
 # =========================

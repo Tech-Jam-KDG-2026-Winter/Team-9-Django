@@ -1,67 +1,94 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div class="dashboard">
+  <h2>ホーム</h2>
+  <h1>今日の予約</h1>
 
-<h2>ホーム</h2>
-<h1>今日の予約</h1>
+  {% if reservation_items %}
+    {% for item in reservation_items %}
+      <div>
+        <p>{{ item.reservation.start_at }}</p>
 
-{% if reservation_items %}
-  {% for item in reservation_items %}
-    <div>
-      <p>{{ item.reservation.start_at }}</p>
+        {% if item.reservation.status == "completed" %}
+          <span>達成</span>
 
-      {% if item.reservation.status == "completed" %}
-        <span>達成</span>
+        {% elif item.reservation.used_recovery %}
+          <span>リカバリー使用済み</span>
 
-      {% elif item.reservation.used_recovery %}
-        <span>リカバリー使用済み</span>
+        {% elif item.reservation.status == "missed" %}
+          <span>未達成</span>
 
-      {% elif item.reservation.status == "missed" %}
-        <span>未達成</span>
+        {% elif item.checked_in %}
+          <span>チェックイン済み</span>
 
-      {% elif item.checked_in %}
-        <span>チェックイン済み</span>
-
-      {% elif item.can_checkin %}
-        <form method="post" action="{% url 'reservation_checkin' item.reservation.id %}">
-          {% csrf_token %}
-          <button type="submit">チェックイン</button>
-        </form>
-
-      {% else %}
-        <span>まだ</span>
-      {% endif %}
-
-      {# リカバリー使用ボタン #}
-      {% if team and item.reservation.status == "missed" and not item.reservation.used_recovery %}
-        {% if item.recovery_available %}
-          <form method="post" action="{% url 'reservation_recovery' item.reservation.id %}">
+        {% elif item.can_checkin %}
+        <div class="checkin-container">
+          <form class="checkin-form" method="post" action="{% url 'reservation_checkin' item.reservation.id %}">
             {% csrf_token %}
-            <button type="submit">リカバリー使用</button>
+            <button type="button" class="open-modal-btn reserve-btn">チェックイン</button>
           </form>
+        
+          <div class="modal checkin-modal" style="display: none;">
+            <div class="modal-content">
+              <span class="cancel-checkin close-x">&times;</span>
+        
+              <h2 class="gradient-text modal-title">チェックイン</h2>
+              <p class="modal-subtitle">予約時刻：{{ item.reservation.start_at|date:"H:i" }}</p>
+        
+              <div class="modal-icon-wrapper">
+                <div class="play-icon-circle">
+                  <span class="play-triangle"></span>
+                </div>
+              </div>
+        
+              <div class="modal-message">
+                <p class="main-msg">準備はいいですか？</p>
+                <p class="sub-msg">チェックインして運動を始めましょう</p>
+              </div>
+        
+              <div class="modal-actions">
+                <button class="confirm-checkin reserve-btn full-width">チェックインする</button>
+                <button type="button" class="cancel-checkin btn-link">キャンセル</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {% else %}
-          <span>リカバリー使用不可（1週間に1回まで）</span>
+          <span>まだ</span>
         {% endif %}
-      {% endif %}
 
-    </div>
-  {% endfor %}
-{% else %}
-  <p>今日の予約はありません</p>
-{% endif %}
+        {# リカバリー使用ボタン #}
+        {% if team and item.reservation.status == "missed" and not item.reservation.used_recovery %}
+          {% if item.recovery_available %}
+            <form method="post" action="{% url 'reservation_recovery' item.reservation.id %}">
+              {% csrf_token %}
+              <button type="submit">リカバリー使用</button>
+            </form>
+          {% else %}
+            <span>リカバリー使用不可（1週間に1回まで）</span>
+          {% endif %}
+        {% endif %}
+
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>今日の予約はありません</p>
+  {% endif %}
 
 
-<h2>チームタイムライン</h2>
-{% if team %}
-  <p>チーム：{{ team.name|default:"名無しチーム" }}</p>
+  <h2>チームタイムライン</h2>
+  {% if team %}
+    <p>チーム：{{ team.name|default:"名無しチーム" }}</p>
 
-  {% for post in timeline_posts %}
-    {% include "timeline/_post.html" with post=post %}
-  {% empty %}
-    <p>まだ投稿はありません</p>
-  {% endfor %}
-{% else %}
-  <p>チーム未所属のため表示できません</p>
-{% endif %}
-
+    {% for post in timeline_posts %}
+      {% include "timeline/_post.html" with post=post %}
+    {% empty %}
+      <p>まだ投稿はありません</p>
+    {% endfor %}
+  {% else %}
+    <p>チーム未所属のため表示できません</p>
+  {% endif %}
+</div>
 {% endblock %}

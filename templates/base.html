@@ -19,22 +19,20 @@
     </div>
   </header>
 
-  <div class="menu">
+  <!-- <div class="menu">
     <a href="{% url 'dashboard' %}">ホーム</a>
-    <a href="{% url 'reservation_new' %}">タイムライン</a>
-    <a href="{% url 'reservation_new' %}">マイページ</a>
-  </div>
+    <a href="{% url 'timeline_list' %}">タイムライン</a>
+  </div> -->
 
   <div id="contents">
-  
     <main>
-  
       <section>
         {% block content %}{% endblock %}
       </section>
-  
     </main>
-  
   </div>
+
+  <script src="{% static 'js/modal.js' %}"></script>
+  <script src="{% static 'js/timer.js' %}"></script>
 </body>
 </html>

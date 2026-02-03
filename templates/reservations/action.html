@@ -1,12 +1,24 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
+<div class="dashboard">
+  <div class="reserve-action card-container">
 
-<h1>運動中</h1>
-<p>予約：{{ reservation.start_at }}</p>
+    <div id="timerSection">
+      <h1 class="gradient-text">運動中</h1>
+      <p class="time">予約：{{ reservation.start_at }}</p>
 
-<form method="get" action="{% url 'reservation_complete' reservation.id %}">
-  <button type="submit">運動を終了する</button>
-</form>
+      <div class="timer-display" id="timerDisplay">00:00:00</div>
+      <input type="hidden" id="resId" value="{{ reservation.id }}">
 
+      <div class="timer-controls">
+        <button type="button" id="startBtn" class="reserve-btn">スタート</button>
+        <button type="button" id="pauseBtn" class="reserve-btn btn-warning" style="display:none;">一時停止</button>
+        <button type="button" id="finishBtn" class="reserve-btn btn-danger" style="display:none;">運動を終了する</button>
+      </div>
+    </div>
+
+  </div>
+</div>
 {% endblock %}
