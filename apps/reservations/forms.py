@@ -6,31 +6,54 @@ from .models import Reservation
 
 
 class ReservationForm(forms.ModelForm):
+    # ① HTML上で表示する「年」を含まない選択肢
+    date = forms.ChoiceField(
+        label="日付", 
+        widget=forms.Select(attrs={'class': 'form-input-field'})
+    )
+    # ② スマホでドラムロールになる時間選択
+    time = forms.TimeField(
+        label="時間", 
+        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-input-field'})
+    )
+
     class Meta:
         model = Reservation
-        fields = ["start_at"]
-        widgets = {
-            "start_at": forms.DateTimeInput(attrs={"type": "datetime-local"})
-        }
+        # start_atは手動で合成するためfieldsからは除外する
+        fields = []
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.user = user  # ★追加
+        self.user = user
 
-    def clean_start_at(self):
-        start_at = self.cleaned_data["start_at"]
+        # 「今日」と「明日」の選択肢を生成
+        today = timezone.localdate()
+        tomorrow = today + timedelta(days=1)
+        self.fields['date'].choices = [
+            (today.isoformat(), "今日"),
+            (tomorrow.isoformat(), "明日")
+        ]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        date_str = cleaned_data.get("date")
+        time_obj = cleaned_data.get("time")
         user = self.user
 
-        if user is None:
-            return start_at 
+        if not date_str or not time_obj:
+            return cleaned_data
 
-        if timezone.is_naive(start_at):
-            start_at = timezone.make_aware(
-                start_at,
-                timezone.get_current_timezone()
-            )
+        # 日付と時間を合成してawareなdatetimeオブジェクトを作る
+        # start_at = 2026-02-03 17:00:00 的な形
+        start_at_str = f"{date_str} {time_obj}"
+        start_at = timezone.make_aware(
+            timezone.datetime.strptime(start_at_str, "%Y-%m-%d %H:%M:%S"),
+            timezone.get_current_timezone()
+        )
 
-        # # ① 1日2枠まで（ユーザー単位）
+        # --- ここからご提示いただいたバリデーション ---
+
+        # # 1. 1日2枠まで
         # day = timezone.localdate(start_at)
         # day_count = Reservation.objects.filter(
         #     user=user,
@@ -40,7 +63,7 @@ class ReservationForm(forms.ModelForm):
         # if day_count >= 2:
         #     raise forms.ValidationError("予約は1日2枠までです。")
 
-        # # ② 前後3時間空ける（ユーザー単位／日またぎも有効）
+        # # 2. 前後3時間空ける
         # lower = start_at - timedelta(hours=3)
         # upper = start_at + timedelta(hours=3)
 
@@ -51,11 +74,21 @@ class ReservationForm(forms.ModelForm):
         # ).exists()
 
         # if conflict_exists:
-        #     raise forms.ValidationError(
-        #         "予約は前後3時間以上空けてください。"
-        #     )
+        #     raise forms.ValidationError("予約は前後3時間以上空けてください。")
 
-        return start_at
+        # 合成した値をcleaned_dataにセット
+        cleaned_data["start_at"] = start_at
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        # cleanメソッドで作成したstart_atをモデルに代入
+        instance.start_at = self.cleaned_data["start_at"]
+        if self.user:
+            instance.user = self.user
+        if commit:
+            instance.save()
+        return instance
 
 
 class ReservationCompleteForm(forms.ModelForm):

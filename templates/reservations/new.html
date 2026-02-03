@@ -1,13 +1,85 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
+<div class="dashboard centered-view">
+  <div class="card-container">
+    <h1 class="gradient-text">予約作成</h1>
+    <p>今日か明日の時間を選んでください</p>
 
-<h1>予約作成</h1>
+    <form id="reservationForm" method="post" class="custom-form">
+      {% csrf_token %}
 
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">予約する</button>
-</form>
+      {% if form.non_field_errors %}
+      <div class="error-banner">
+        {% for error in form.non_field_errors %}
+        <p class="error-text">⚠️ {{ error }}</p>
+        {% endfor %}
+      </div>
+      {% endif %}
 
+      <div class="form-group">
+        <label>{{ form.date.label }}</label>
+        {{ form.date }}
+      </div>
+
+      <div class="form-group">
+        <label>{{ form.time.label }}</label>
+        {{ form.time }}
+        <small style="color: #888;">※時計をタップするとクルクル回して選べます</small>
+      </div>
+
+      <button type="button" id="openConfirmModal" class="reserve-btn full-width">予約を確定する</button>
+    </form>
+  </div>
+</div>
+
+<div id="confirmModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <h2 class="gradient-text">予約の確認</h2>
+    <div class="modal-icon-wrapper">
+      <div class="play-icon-circle">
+        <span style="font-size:40px">🕒</span>
+      </div>
+    </div>
+    <div class="modal-message">
+      <p class="main-msg">この内容で予約しますか？</p>
+      <p class="sub-msg">予約後は前後3時間の変更が制限されます。</p>
+    </div>
+    <div class="modal-actions">
+      <button id="submitReservationBtn" class="reserve-btn full-width">はい、予約します</button>
+      <button type="button" id="closeConfirmModal" class="btn-link">戻って直す</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('confirmModal');
+    const openBtn = document.getElementById('openConfirmModal');
+    const closeBtn = document.getElementById('closeConfirmModal');
+    const submitBtn = document.getElementById('submitReservationBtn');
+    const form = document.getElementById('reservationForm');
+
+    // モーダルを開く
+    openBtn.addEventListener('click', () => {
+      modal.style.display = 'flex';
+    });
+
+    // モーダルを閉じる
+    closeBtn.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    // フォームを送信する
+    submitBtn.addEventListener('click', () => {
+      form.submit();
+    });
+
+    // 背景クリックで閉じる
+    window.addEventListener('click', (e) => {
+      if (e.target === modal) modal.style.display = 'none';
+    });
+  });
+</script>
 {% endblock %}

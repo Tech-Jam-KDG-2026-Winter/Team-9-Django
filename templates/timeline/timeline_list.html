@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard">
+  <h2>タイムライン</h2>
+  <h1 class="gradient-text">みんなの頑張り</h1>
+
+  <div class="reservation-list">
+    {% for post in posts %}
+    {% include "timeline/_post.html" with post=post %}
+    {% empty %}
+    <div class="card-container centered-view">
+      <p class="empty-msg">まだ投稿がありません。<br>運動して最初の記録を投稿しましょう！</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

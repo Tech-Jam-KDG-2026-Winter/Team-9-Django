@@ -1,27 +1,42 @@
-{% extends 'base.html' %}
+<div class="reservation-card timeline-card">
 
-{% block content %}
-<div style="border:1px solid #ccc; padding:10px; margin:8px 0;">
-  <p>達成：{{ post.created_at }}</p>
+  <div class="timeline-main">
+    <div class="user-info">
+      <div class="user-avatar">
+        {{ post.user.display_name|slice:":1" }}
+      </div>
+      <div class="user-meta">
+        <span class="user-name">{{ post.user.display_name }}</span>
+        <span class="res-date">{{ post.created_at|date:"n/j H:i" }}</span>
+      </div>
+    </div>
 
-  <p>種別：{{ post.reservation.get_activity_type_display }}</p>
+    <div class="activity-content">
+      <div class="activity-header">
+        <span class="res-label">ACTIVITY</span>
+        <div class="activity-type">{{ post.reservation.get_activity_type_display }}</div>
+      </div>
 
-  {% if post.visibility == "with_detail" %}
-    {% if post.reservation.memo %}
-      <p>メモ：{{ post.reservation.memo }}</p>
-    {% else %}
-      <p>メモ：なし</p>
-    {% endif %}
-  {% else %}
-    <p>詳細なし</p>
-  {% endif %}
+      {% if post.visibility == "with_detail" %}
+      {% if post.reservation.memo %}
+      <div class="activity-memo">{{ post.reservation.memo }}</div>
+      {% endif %}
+      {% else %}
+      <p class="status-info small">詳細なし</p>
+      {% endif %}
+    </div>
+  </div>
 
-  <form method="post" action="{% url 'timeline_like' post.id %}">
-    {% csrf_token %}
-    <button type="submit">
-      ❤️ {{ post.like_count }}
-    </button>
-  </form>
+  <div class="timeline-footer">
+    <div class="status-badge-complete">達成 🎉</div>
+
+    <form method="post" action="{% url 'timeline_like' post.id %}" class="like-form">
+      {% csrf_token %}
+      <button type="submit" class="like-btn {% if post.id in user_liked_post_ids %}is-liked{% endif %}">
+        <span class="heart">{% if post.id in user_liked_post_ids %}❤️{% else %}🤍{% endif %}</span>
+        <span class="like-count">{{ post.like_count }}</span>
+      </button>
+    </form>
+  </div>
+
 </div>
-
-{% endblock %}
