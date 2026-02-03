@@ -24,8 +24,11 @@ def csrf(request):
     return JsonResponse({"ok": True})
 
 @csrf_protect
-@require_POST
+@require_http_methods(["GET", "POST"])
 def signup(request):
+    if request.method == "GET":
+        return JsonResponse({"ok": True, "message": "signup page placeholder"}, status=200)
+
     data = _get_body(request)
     email = data.get("email")
     password = data.get("password")
@@ -34,7 +37,6 @@ def signup(request):
     if not email or not password or not display_name:
         return JsonResponse({"error": "missing fields"}, status=400)
 
-    # 先に重複チェック（大文字小文字の差も吸収）
     if User.objects.filter(email__iexact=email).exists():
         return JsonResponse({"error": "email already exists"}, status=400)
 
