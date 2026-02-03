@@ -22,16 +22,15 @@ class ReservationForm(forms.ModelForm):
         user = self.user
 
         if user is None:
-            return start_at  # 念のため（通常は通らない）
+            return start_at 
 
-        # datetime-local対策（naive → aware）
         if timezone.is_naive(start_at):
             start_at = timezone.make_aware(
                 start_at,
                 timezone.get_current_timezone()
             )
 
-        # ① 1日2枠まで（ユーザー単位）
+        # 1日2枠まで
         day = timezone.localdate(start_at)
         day_count = Reservation.objects.filter(
             user=user,
@@ -41,7 +40,7 @@ class ReservationForm(forms.ModelForm):
         if day_count >= 2:
             raise forms.ValidationError("予約は1日2枠までです。")
 
-        # ② 前後3時間空ける（ユーザー単位／日またぎも有効）
+        #前後3時間空ける（日またぎも有効）
         lower = start_at - timedelta(hours=3)
         upper = start_at + timedelta(hours=3)
 

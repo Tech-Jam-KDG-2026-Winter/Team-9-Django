@@ -48,7 +48,6 @@ def mark_missed_reservations(user):
         r.save(update_fields=["status", "updated_at"])
 
         if getattr(user, "team", None):
-            # team +1（get_or_createで二重防止）
             create_fail_to_team_pool(user.team, r.id)
 
 
@@ -218,7 +217,6 @@ def complete_reservation(request, reservation_id):
                 "updated_at",
             ])
 
-            # A案：達成で +2（返却+1 ＋運営+1）
             create_deposit_return(request.user, r.id)
             create_admin_bonus(request.user, r.id)
 
@@ -273,7 +271,6 @@ def use_recovery(request, reservation_id):
     reservation.used_recovery = True
     reservation.save(update_fields=["status", "used_recovery", "updated_at"])
 
-    # A案：team -1 & user +1
     create_recovery(user, team, ref_id=reservation.id)
 
     user.last_recovery_at = timezone.now()
