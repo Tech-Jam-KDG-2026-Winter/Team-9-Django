@@ -30,13 +30,15 @@
   <div class="timeline-footer">
     <div class="status-badge-complete">達成 🎉</div>
 
-    <form method="post" action="{% url 'timeline_like' post.id %}" class="like-form">
-      {% csrf_token %}
-      <button type="submit" class="like-btn {% if post.id in user_liked_post_ids %}is-liked{% endif %}">
-        <span class="heart">{% if post.id in user_liked_post_ids %}❤️{% else %}🤍{% endif %}</span>
-        <span class="like-count">{{ post.like_count }}</span>
-      </button>
-    </form>
+    <div class="like-container">
+      <div class="like-container">
+        <button type="button" class="like-btn {% if post.id in user_liked_post_ids %}is-liked{% endif %}"
+          data-url="{% url 'timeline_like' post.id %}">
+          <span class="heart">{% if post.id in user_liked_post_ids %}❤️{% else %}🤍{% endif %}</span>
+          <span class="like-count">{{ post.calculated_count }}</span>
+        </button>
+      </div>
+    </div>
   </div>
 
 </div>
