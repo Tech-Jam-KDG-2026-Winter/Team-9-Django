@@ -106,7 +106,8 @@ def dashboard(request):
     reservation_items = []
     for r in reservations:
         # 予約が今日かどうか
-        is_today = r.start_at.date() == today
+        local_start = timezone.localtime(r.start_at)
+        is_today = local_start.date() == today
         
         # ステータスが書き換わっていなくても、時間が30分以上過ぎていたらmissed扱いとして扱う（表示用）
         is_missed = r.status == "missed"
