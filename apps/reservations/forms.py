@@ -64,7 +64,11 @@ class ReservationCompleteForm(forms.ModelForm):
         fields = ["activity_type", "memo", "share_detail"]
         widgets = {
             'activity_type': forms.Select(attrs={'class': 'form-input-field'}),
-            'memo': forms.Textarea(attrs={'class': 'form-input-field', 'rows': 3}),
+            'memo': forms.Textarea(attrs={
+                'class': 'form-input-field',
+                'rows': 3,
+                'placeholder': '運動の感想など（任意）'
+            }),
             'share_detail': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
         }
 
