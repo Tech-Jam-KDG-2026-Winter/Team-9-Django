@@ -189,6 +189,17 @@ def action_reservation(request, reservation_id):
 
 @login_required
 def complete_reservation(request, reservation_id):
+    reservation = get_object_or_404(
+        Reservation,
+        id=reservation_id,
+        user=request.user,
+    )
+
+    if reservation.status == "completed" or reservation.completed_at is not None:
+        return redirect("dashboard")
+
+    if reservation.checkin_at is None:
+        return redirect("/?error=need_checkin")
     reservation = get_object_or_404(Reservation, id=reservation_id, user=request.user)
     
     if request.method == "POST":
