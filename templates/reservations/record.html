@@ -1,27 +1,48 @@
-<h1>完了</h1>
+{% extends 'base.html' %}
 
-<form method="post">
-  {% csrf_token %}
+{% block content %}
+<div class="dashboard">
+  <div class="reserve-action card-container">
+    <h1 class="gradient-text">完了</h1>
+    <p>今日の記録を残しましょう</p>
 
-  <div>
-    <label>種別（必須）</label>
-    {{ form.activity_type }}
-    {% for e in form.activity_type.errors %}
-      <p>{{ e }}</p>
-    {% endfor %}
+    <form method="post" class="custom-form">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="{{ form.activity_type.id_for_label }}">種別（必須）</label>
+        {{ form.activity_type }} {% for e in form.activity_type.errors %}<p class="error">{{ e }}</p>{% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.memo.id_for_label }}">メモ（任意）</label>
+        {{ form.memo }}
+        {% for e in form.memo.errors %}<p class="error">{{ e }}</p>{% endfor %}
+      </div>
+
+      <div class="form-check">
+        <label for="{{ form.share_detail.id_for_label }}">
+          {{ form.share_detail }}
+          <span>詳細をタイムラインに投稿する</span>
+        </label>
+      </div>
+
+      <button type="submit" class="reserve-btn full-width">完了する</button>
+    </form>
   </div>
+</div>
 
-  <div>
-    <label>メモ（任意）</label>
-    {{ form.memo }}
-  </div>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    // URLから "?time=00:15:00" の部分を取得
+    const urlParams = new URLSearchParams(window.location.search);
+    const timeSpent = urlParams.get('time');
 
-  <div>
-    <label>
-      {{ form.share_detail }}
-      詳細（種別＋メモ）をタイムラインに投稿する
-    </label>
-  </div>
+    const memoField = document.querySelector('textarea[name="memo"]');
+    if (timeSpent && memoField) {
+      memoField.value = `運動時間：${timeSpent}\n` + memoField.value;
+    }
+  });
+</script>
 
-  <button type="submit">完了する</button>
-</form>
+{% endblock %}

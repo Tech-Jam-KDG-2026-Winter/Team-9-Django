@@ -73,7 +73,6 @@ def new_reservation(request):
     return render(request, "reservations/new.html", {"form": form})
 
 
-
 # =========================
 # ダッシュボード
 # =========================
@@ -190,24 +189,15 @@ def action_reservation(request, reservation_id):
 
 @login_required
 def complete_reservation(request, reservation_id):
-    reservation = get_object_or_404(
-        Reservation,
-        id=reservation_id,
-        user=request.user,
-    )
-
-    if reservation.status == "completed" or reservation.completed_at is not None:
-        return redirect("dashboard")
-
-    if reservation.checkin_at is None:
-        return redirect("/?error=need_checkin")
-
+    reservation = get_object_or_404(Reservation, id=reservation_id, user=request.user)
+    
     if request.method == "POST":
         form = ReservationCompleteForm(request.POST, instance=reservation)
         if form.is_valid():
             r = form.save(commit=False)
             r.status = "completed"
             r.completed_at = timezone.now()
+<<<<<<< Updated upstream
             r.save(update_fields=[
                 "activity_type",
                 "memo",
@@ -222,18 +212,18 @@ def complete_reservation(request, reservation_id):
 
             create_timeline_post_if_needed(r)
 
+=======
+            r.save()
+            # ...ボーナス付与などの処理...
+>>>>>>> Stashed changes
             return redirect("dashboard")
     else:
         form = ReservationCompleteForm(instance=reservation)
 
-    return render(
-        request,
-        "reservations/record.html",
-        {
-            "reservation": reservation,
-            "form": form,
-        },
-    )
+    return render(request, "reservations/record.html", {
+        "reservation": reservation,
+        "form": form,
+    })
 
 
 # =========================

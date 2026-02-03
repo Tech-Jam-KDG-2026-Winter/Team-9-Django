@@ -23,10 +23,18 @@
         <span>チェックイン済み</span>
 
       {% elif item.can_checkin %}
-        <form method="post" action="{% url 'reservation_checkin' item.reservation.id %}">
+        <form id="checkinForm" method="post" action="{% url 'reservation_checkin' item.reservation.id %}">
           {% csrf_token %}
-          <button type="submit">チェックイン</button>
+          <button type="button" id="openModalBtn">チェックイン</button>
         </form>
+        
+        <div id="checkinModal" class="modal" style="display: none;">
+          <div class="modal-content">
+            <p>本当に運動を開始しますか？</p>
+            <button id="confirmCheckin">開始</button>
+            <button id="cancelCheckin">キャンセル</button>
+          </div>
+        </div>
 
       {% else %}
         <span>まだ</span>

@@ -1,52 +1,19 @@
 @charset "utf-8";
 
-:root{
+:root {
   --gradient-1: #5638FF;
   --gradient-2: #A600FF;
   --primary-gradient: linear-gradient(to right,
-        var(--gradient-1),
-        var(--gradient-2));
+      var(--gradient-1),
+      var(--gradient-2));
   --font-size: 16px;
   --background: #ffffff;
   --foreground: oklch(0.145 0 0);
   --card: #ffffff;
   --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: #030213;
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: #030213;
-  --muted: #ececf0;
-  --muted-foreground: #717182;
-  --accent: #e9ebef;
-  --accent-foreground: #030213;
-  --destructive: #d4183d;
-  --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
-  --input: transparent;
-  --input-background: #f3f3f5;
-  --switch-background: #cbced4;
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: #030213;
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
 }
 
-.app-header{
+.app-header {
   background-color: var(--background);
   box-shadow: 0 5px 10px var(--border);
   padding: 20px 32px;
@@ -64,7 +31,7 @@
   padding: 0 24px;
 }
 
-header a{
+header a {
   margin-top: auto;
   margin-bottom: auto;
 }
@@ -98,25 +65,183 @@ header a{
   outline: none;
 }
 
-body{
+body {
   margin: 0;
-  background: linear-gradient(to right,#FAF5FF,#EFF6FF);
+  background: linear-gradient(to right, #FAF5FF, #EFF6FF);
 }
 
-.menu{
+.menu {
   display: flex;
   justify-content: space-around;
 }
 
-.gradient-text{
+.gradient-text {
   background: var(--primary-gradient);
   -webkit-background-clip: text;
   background-clip: text;
-  color: transparent;;
+  color: transparent;
+  ;
 }
 
 
-.app-header .gradient-text{
+.app-header .gradient-text {
   font-size: 22px;
   font-weight: 700;
+}
+
+.dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 24px;
+}
+
+.reserve-card {
+  background-color: var(--background);
+}
+
+.reserve-action{
+  background-color: var(--background);
+}
+
+.reserve-action .time{
+  color: aqua;
+}
+
+.timer-display {
+  font-size: 3rem;
+  font-weight: bold;
+  margin: 20px 0;
+  font-family: monospace;
+  /* 数字がズレないように */
+}
+
+.timer-controls button {
+  padding: 10px 20px;
+  margin: 5px;
+  cursor: pointer;
+}
+
+.btn-start {
+  background-color: #28a745;
+  color: white;
+  border: none;
+}
+
+.btn-pause {
+  background-color: #ffc107;
+  color: black;
+  border: none;
+  display: none;
+}
+
+/* カードの共通スタイル */
+.card-container {
+  max-width: 500px;
+  margin: 40px auto;
+  padding: 40px;
+  border-radius: 24px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+/* 既存の .time が aqua 指定だったので見やすく調整 */
+.reserve-action .time {
+  color: #64748b;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+/* タイマーの数字 */
+.timer-display {
+  font-size: 4rem;
+  font-family: 'Courier New', monospace;
+  color: var(--foreground);
+  margin: 30px 0;
+  letter-spacing: 2px;
+}
+
+/* ボタンのバリエーション */
+.btn-warning {
+  background: #ffb000;
+  box-shadow: 0 4px 12px rgba(255, 176, 0, 0.3);
+}
+
+.btn-danger {
+  background: #ff3b30;
+  box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
+  margin-top: 15px;
+}
+
+.full-width {
+  width: 100%;
+  margin-top: 20px;
+  padding: 15px;
+}
+
+/* フォーム全体とラベルのスタイル */
+.dashboard .custom-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  text-align: left;
+  margin-top: 30px;
+}
+
+.dashboard.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--gradient-1);
+}
+
+/* 入力欄（Select, Textarea）専用クラス */
+.dashboard.form-input-field {
+  display: block !important;
+  width: 100%;
+  min-height: 48px;
+  /* 少し高さを出して押しやすく */
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 16px;
+  background-color: #f8fafc !important;
+  color: #333 !important;
+  /* 透明化対策 */
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.dashboard.form-input-field:focus {
+  outline: none;
+  border-color: var(--gradient-1);
+  background-color: #fff !important;
+}
+
+/* チェックボックス専用クラス */
+.dashboard.form-checkbox {
+  display: inline-block !important;
+  width: 20px !important;
+  height: 20px !important;
+  margin-right: 10px;
+  cursor: pointer;
+  vertical-align: middle;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* チェックボックスのラベル行 */
+.dashboard.form-check {
+  margin: 10px 0;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* エラーメッセージ */
+.dashboard.error {
+  color: #ff3b30;
+  font-size: 12px;
+  margin-top: 4px;
 }
