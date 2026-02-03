@@ -23,6 +23,17 @@
             開始する
           </button>
         </div>
+        {% elif item.missed %}
+        {% if item.recovery_available %}
+        <button type="button" class="open-recovery-modal-btn status-badge-missed" style="cursor: pointer;"
+          data-url="{% url 'reservation_recovery' item.reservation.id %}">
+          リカバリー
+        </button>
+        {% else %}
+        <span class="status-badge-missed">未達成</span>
+        {% endif %}
+        {% elif item.recovery %}
+        <span class="status-badge-recovery">リカバリー済</span>
         {% else %}
         <span class="status-badge-pending">待機中</span>
         {% endif %}
@@ -48,6 +59,27 @@
       <div class="modal-actions">
         <button type="submit" class="reserve-btn full-width">チェックインする</button>
         <button type="button" class="btn-link" id="closeModalBtn">キャンセル</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="globalRecoveryModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <span class="close-x" id="closeRecoveryModalX">&times;</span>
+    <h2 class="gradient-text">リカバリー実行</h2>
+    <div class="modal-icon-wrapper">
+      <div class="play-icon-circle" style="background: var(--gold-gradient);">
+        <span style="font-size:40px">🛡️</span>
+      </div>
+    </div>
+    <p>リカバリーを使用しますか？<br><small>※リカバリーは週に1回のみ使用可能です。</small></p>
+
+    <form id="globalRecoveryForm" method="post" action="">
+      {% csrf_token %}
+      <div class="modal-actions">
+        <button type="submit" class="reserve-btn full-width">リカバリーを適用する</button>
+        <button type="button" class="btn-link" id="closeRecoveryModalBtn">キャンセル</button>
       </div>
     </form>
   </div>

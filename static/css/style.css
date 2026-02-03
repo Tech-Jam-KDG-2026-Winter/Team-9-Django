@@ -423,25 +423,67 @@ body {
   box-shadow: 0 4px 10px rgba(86, 56, 255, 0.2);
 }
 
-/* 達成バッジ */
+/* 右側エリアのバッジ・ボタン共通設定 */
+.status-badge-complete,
+.status-badge-pending,
+.status-badge-missed,
+.status-badge-recovery,
+.start-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* サイズの統一 */
+  width: 150px;
+  /* 最低限の幅を確保 */
+  height: 36px;
+  /* 高さを固定 */
+  padding: 0 16px;
+  /* 左右の余白 */
+  box-sizing: border-box;
+
+  /* テキスト設定 */
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 30px;
+  white-space: nowrap;
+  /* 改行禁止 */
+  text-align: center;
+}
+
+/* 達成 */
 .status-badge-complete {
   background: #f0fdf4;
   color: #16a34a;
-  padding: 8px 16px;
-  border-radius: 30px;
-  font-size: 13px;
-  font-weight: 700;
   border: 1px solid #dcfce7;
 }
 
-/* 待機バッジ */
+/* 待機中 */
 .status-badge-pending {
   background: #f8fafc;
   color: #94a3b8;
-  padding: 8px 16px;
-  border-radius: 30px;
-  font-size: 13px;
-  font-weight: 600;
+  border: 1px solid #e2e8f0;
+}
+
+/* 未達成 */
+.status-badge-missed {
+  background: #fff1f0;
+  color: #cf1322;
+  border: 1px solid #ffdedc;
+}
+
+/* 未達成ボタンをホバーした時の演出 */
+button.status-badge-missed:hover {
+  background: #fffbfa;
+  border-color: #cf1322;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(207, 19, 34, 0.1);
+}
+
+/* リカバリー */
+.status-badge-recovery {
+  background: #e6f7ff;
+  color: #096dd9;
+  border: 1px solid #91d5ff;
 }
 
 /* タイムラインカード専用のレイアウト */
