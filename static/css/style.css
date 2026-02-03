@@ -1,167 +1,109 @@
 @charset "utf-8";
 
+/* --- 変数定義 --- */
 :root {
   --gradient-1: #5638FF;
   --gradient-2: #A600FF;
-  --primary-gradient: linear-gradient(to right,
-      var(--gradient-1),
-      var(--gradient-2));
-  --font-size: 16px;
+  --primary-gradient: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
+  --gold-gradient: linear-gradient(135deg, #FFD700, #FFA500);
   --background: #ffffff;
-  --foreground: oklch(0.145 0 0);
-  --card: #ffffff;
-  --card-foreground: oklch(0.145 0 0);
+  --foreground: #1a1a1a;
+  --border: #e2e8f0;
+  --card-bg: #ffffff;
 }
 
+/* --- 全体スタイル --- */
+body {
+  margin: 0;
+  font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif;
+  background: linear-gradient(to right, #FAF5FF, #EFF6FF);
+  color: var(--foreground);
+  line-height: 1.6;
+}
+
+/* --- ヘッダー --- */
 .app-header {
   background-color: var(--background);
-  box-shadow: 0 5px 10px var(--border);
-  padding: 20px 32px;
-  border-bottom: 1px solid #eee;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .header-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   max-width: 1200px;
   margin: 0 auto;
-  width: 100%;
   padding: 0 24px;
 }
 
-header a {
-  margin-top: auto;
-  margin-bottom: auto;
-}
-
-.reserve-btn {
-  background: var(--primary-gradient);
-  color: #fff;
-
-  border: none;
-  outline: none;
-
-  padding: 10px 18px;
-  border-radius: 12px;
-
-  font-size: 14px;
-  font-weight: 600;
-
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
-
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.reserve-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.4);
-}
-
-.reserve-btn:focus,
-.reserve-btn:active {
-  outline: none;
-}
-
-body {
-  margin: 0;
-  background: linear-gradient(to right, #FAF5FF, #EFF6FF);
-}
-
+/* --- ナビゲーションメニュー --- */
 .menu {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
+  gap: 30px;
+  padding: 15px 0;
+  background: white;
+  margin-bottom: 20px;
 }
 
+.menu a {
+  text-decoration: none;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.menu a:hover {
+  color: var(--gradient-1);
+}
+
+/* --- テキスト装飾 --- */
 .gradient-text {
   background: var(--primary-gradient);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  ;
+  display: inline-block;
+  font-weight: 800;
 }
 
-
-.app-header .gradient-text {
-  font-size: 22px;
-  font-weight: 700;
-}
-
-.dashboard {
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-  padding: 0 24px;
-}
-
-.reserve-card {
-  background-color: var(--background);
-}
-
-.reserve-action{
-  background-color: var(--background);
-}
-
-.reserve-action .time{
-  color: aqua;
-}
-
-.timer-display {
-  font-size: 3rem;
-  font-weight: bold;
-  margin: 20px 0;
-  font-family: monospace;
-  /* 数字がズレないように */
-}
-
-.timer-controls button {
-  padding: 10px 20px;
-  margin: 5px;
-  cursor: pointer;
-}
-
-.btn-start {
-  background-color: #28a745;
-  color: white;
-  border: none;
-}
-
-.btn-pause {
-  background-color: #ffc107;
-  color: black;
-  border: none;
-  display: none;
-}
-
-/* カードの共通スタイル */
+/* --- カードレイアウト --- */
 .card-container {
-  max-width: 500px;
+  background-color: var(--card-bg);
+  max-width: 1200px;
   margin: 40px auto;
   padding: 40px;
   border-radius: 24px;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
-/* 既存の .time が aqua 指定だったので見やすく調整 */
-.reserve-action .time {
-  color: #64748b;
-  font-weight: 500;
-  margin-bottom: 20px;
+/* --- ボタン --- */
+.reserve-btn {
+  background: var(--primary-gradient);
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+  transition: all 0.2s ease;
 }
 
-/* タイマーの数字 */
-.timer-display {
-  font-size: 4rem;
-  font-family: 'Courier New', monospace;
-  color: var(--foreground);
-  margin: 30px 0;
-  letter-spacing: 2px;
+.reserve-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.4);
 }
 
-/* ボタンのバリエーション */
+.full-width {
+  width: 100%;
+}
+
 .btn-warning {
   background: #ffb000;
   box-shadow: 0 4px 12px rgba(255, 176, 0, 0.3);
@@ -170,83 +112,73 @@ body {
 .btn-danger {
   background: #ff3b30;
   box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
-  margin-top: 15px;
 }
 
-.full-width {
-  width: 100%;
-  margin-top: 20px;
-  padding: 15px;
+.btn-link {
+  background: none;
+  border: none;
+  color: #888;
+  font-weight: 600;
+  cursor: pointer;
 }
 
-/* フォーム全体とラベルのスタイル */
-.record .custom-form {
+/* --- タイマー --- */
+.timer-display {
+  font-size: 4rem;
+  font-family: 'Courier New', monospace;
+  color: var(--foreground);
+  margin: 30px 0;
+  letter-spacing: 2px;
+  font-weight: bold;
+}
+
+.dashboard{
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* --- フォームスタイル (dashboardの中にある要素へ適用) --- */
+.dashboard .custom-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
   text-align: left;
-  margin-top: 30px;
 }
 
-.record .form-group label {
+.dashboard .form-group label {
   display: block;
   font-weight: 600;
   margin-bottom: 8px;
   color: var(--gradient-1);
 }
 
-/* 入力欄（Select, Textarea）専用クラス */
-.record .form-input-field {
+.dashboard .form-input-field {
   display: block !important;
   width: 100%;
   min-height: 48px;
-  /* 少し高さを出して押しやすく */
   padding: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
   border-radius: 12px;
   font-size: 16px;
   background-color: #f8fafc !important;
   color: #333 !important;
-  /* 透明化対策 */
   box-sizing: border-box;
-  transition: border-color 0.2s;
 }
 
-.record .form-input-field:focus {
-  outline: none;
-  border-color: var(--gradient-1);
-  background-color: #fff !important;
-}
-
-/* チェックボックス専用クラス */
-.record .form-checkbox {
-  display: inline-block !important;
+.dashboard .form-checkbox {
   width: 20px !important;
   height: 20px !important;
   margin-right: 10px;
   cursor: pointer;
-  vertical-align: middle;
-  opacity: 1 !important;
-  visibility: visible !important;
 }
 
-/* チェックボックスのラベル行 */
-.record .form-check {
-  margin: 10px 0;
-  font-size: 14px;
+.dashboard .form-check {
   display: flex;
   align-items: center;
-  cursor: pointer;
+  font-size: 14px;
 }
 
-/* エラーメッセージ */
-.record .error {
-  color: #ff3b30;
-  font-size: 12px;
-  margin-top: 4px;
-}
-
-/* モーダル背景：画面全体を暗くぼかす */
+/* --- モーダル (ポップアップ) --- */
 .modal {
   position: fixed;
   z-index: 9999;
@@ -255,17 +187,13 @@ body {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.6);
-  /* 背景を暗く */
   backdrop-filter: blur(5px);
-  /* 背景をぼかす */
   display: flex;
+  /* JSで表示を切り替える際に重要 */
   align-items: center;
-  /* 上下中央 */
   justify-content: center;
-  /* 左右中央 */
 }
 
-/* モーダルカード */
 .modal-content {
   background: white;
   padding: 40px 30px;
@@ -274,7 +202,7 @@ body {
   max-width: 400px;
   text-align: center;
   position: relative;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
   animation: modalScaleUp 0.3s ease-out;
 }
 
@@ -290,9 +218,9 @@ body {
   }
 }
 
-/* アイコン部分 */
+/* モーダル内アイコン */
 .modal-icon-wrapper {
-  margin: 30px 0;
+  margin: 25px 0;
   display: flex;
   justify-content: center;
 }
@@ -305,7 +233,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 20px rgba(124, 58, 237, 0.3);
+}
+
+/* お疲れ様モーダルのアイコン色を変更 */
+#finishModal .play-icon-circle {
+  background: var(--gold-gradient);
 }
 
 .play-triangle {
@@ -317,64 +249,28 @@ body {
   margin-left: 5px;
 }
 
-/* テキスト系 */
-.modal-title {
-  font-size: 20px;
-  margin-bottom: 5px;
-}
-
-.modal-subtitle {
-  color: #888;
-  font-size: 14px;
-  margin-bottom: 20px;
-}
-
-.main-msg {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 5px;
-  color: #333;
-}
-
-.sub-msg {
-  color: #666;
-  font-size: 14px;
-}
-
-/* ボタン類 */
 .close-x {
   position: absolute;
-  top: 20px;
+  top: 15px;
   right: 20px;
-  font-size: 24px;
+  font-size: 28px;
   color: #ccc;
   cursor: pointer;
 }
 
 .modal-actions {
-  margin-top: 30px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
+  margin-top: 25px;
 }
 
-.btn-link {
-  background: none;
-  border: none;
-  color: #888;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* record.html専用の追加スタイル */
-#finishModal .modal-icon-wrapper .play-icon-circle {
-  background: linear-gradient(135deg, #FFD700, #FFA500);
-  /* お祝い用ゴールドグラデーション */
-  box-shadow: 0 10px 20px rgba(255, 165, 0, 0.3);
-}
-
-#finishModal .modal-message .main-msg {
-  color: var(--gradient-1);
-  /* メインカラーでお疲れ様を強調 */
-  font-size: 22px;
+/* ステータスバッジ (Dashboard用) */
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  background: #f1f5f9;
+  color: #64748b;
 }

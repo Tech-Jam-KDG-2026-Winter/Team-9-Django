@@ -1,34 +1,21 @@
 {% extends 'base.html' %}
-{% load static %}
-
 {% block content %}
-<div class="record">
+<div class="dashboard">
   <div class="reserve-action card-container">
     <h1 class="gradient-text">完了</h1>
-    <p>今日の記録を残しましょう</p>
-
     <form id="recordForm" method="post" class="custom-form">
       {% csrf_token %}
-
       <div class="form-group">
-        <label for="{{ form.activity_type.id_for_label }}">種別（必須）</label>
+        <label>種別（必須）</label>
         {{ form.activity_type }}
-        {% for e in form.activity_type.errors %}<p class="error">{{ e }}</p>{% endfor %}
       </div>
-
       <div class="form-group">
-        <label for="{{ form.memo.id_for_label }}">メモ（任意）</label>
+        <label>メモ（任意）</label>
         {{ form.memo }}
-        {% for e in form.memo.errors %}<p class="error">{{ e }}</p>{% endfor %}
       </div>
-
       <div class="form-check">
-        <label for="{{ form.share_detail.id_for_label }}">
-          {{ form.share_detail }}
-          <span>詳細をタイムラインに投稿する</span>
-        </label>
+        <label>{{ form.share_detail }} <span>詳細をタイムラインに投稿</span></label>
       </div>
-
       <button type="button" id="openFinishModal" class="reserve-btn full-width">完了する</button>
     </form>
   </div>
@@ -36,19 +23,11 @@
 
 <div id="finishModal" class="modal" style="display: none;">
   <div class="modal-content">
-    <h2 class="gradient-text modal-title">お疲れ様でした！</h2>
-
+    <h2 class="gradient-text">お疲れ様でした！</h2>
     <div class="modal-icon-wrapper">
-      <div class="play-icon-circle">
-        <span style="font-size: 40px;">🎉</span>
-      </div>
+      <div class="play-icon-circle"><span style="font-size:40px">🎉</span></div>
     </div>
-
-    <div class="modal-message">
-      <p class="main-msg">ナイスワークアウト！</p>
-      <p class="sub-msg">今日の努力を保存して終了しますか？</p>
-    </div>
-
+    <p>ナイスワークアウト！<br><small>今日の努力を保存して終了しますか？</small></p>
     <div class="modal-actions">
       <button id="submitFormBtn" class="reserve-btn full-width">保存して終了</button>
       <button type="button" id="closeFinishModal" class="btn-link">入力を直す</button>
@@ -58,40 +37,15 @@
 
 <script>
   window.addEventListener('DOMContentLoaded', () => {
-    // 1. 運動時間の自動入力
     const urlParams = new URLSearchParams(window.location.search);
     const timeSpent = urlParams.get('time');
     const memoField = document.querySelector('textarea[name="memo"]');
-    if (timeSpent && memoField) {
-      memoField.value = `運動時間：${timeSpent}\n` + (memoField.value || "");
-    }
+    if (timeSpent && memoField) memoField.value = `運動時間：${timeSpent}\n` + (memoField.value || "");
 
-    // 2. ポップアップ制御
-    const finishModal = document.getElementById('finishModal');
-    const openBtn = document.getElementById('openFinishModal');
-    const closeBtn = document.getElementById('closeFinishModal');
-    const submitBtn = document.getElementById('submitFormBtn');
-    const recordForm = document.getElementById('recordForm');
-
-    // 「完了する」ボタンでポップアップ表示
-    openBtn.addEventListener('click', () => {
-      finishModal.style.display = 'flex';
-    });
-
-    // 「入力を直す」ボタンで閉じる
-    closeBtn.addEventListener('click', () => {
-      finishModal.style.display = 'none';
-    });
-
-    // 「保存して終了」でフォームを送信
-    submitBtn.addEventListener('click', () => {
-      recordForm.submit();
-    });
-
-    // 背景クリックで閉じる
-    window.addEventListener('click', (e) => {
-      if (e.target === finishModal) finishModal.style.display = 'none';
-    });
+    const modal = document.getElementById('finishModal');
+    document.getElementById('openFinishModal').onclick = () => modal.style.display = 'flex';
+    document.getElementById('closeFinishModal').onclick = () => modal.style.display = 'none';
+    document.getElementById('submitFormBtn').onclick = () => document.getElementById('recordForm').submit();
   });
 </script>
 {% endblock %}
