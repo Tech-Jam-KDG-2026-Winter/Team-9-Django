@@ -15,6 +15,7 @@
 /* --- 全体スタイル --- */
 body {
   margin: 0;
+  margin-bottom: 30px;
   font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif;
   background: linear-gradient(to right, #FAF5FF, #EFF6FF);
   color: var(--foreground);
@@ -273,4 +274,292 @@ body {
   font-weight: bold;
   background: #f1f5f9;
   color: #64748b;
+}
+
+/* 予約画面の入力フィールドを整える */
+.dashboard .form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+/* Djangoのデフォルト入力要素にもスタイルを強制適用 */
+.dashboard .form-group input,
+.dashboard .form-group select,
+.dashboard .form-group textarea {
+  display: block !important;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 16px;
+  background-color: #f8fafc !important;
+  color: #333 !important;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.dashboard .form-group input:focus {
+  outline: none;
+  border-color: var(--gradient-1);
+  box-shadow: 0 0 0 3px rgba(86, 56, 255, 0.1);
+}
+
+/* カレンダーや時刻選択のアイコンの色を少し調整（ブラウザ依存あり） */
+.dashboard .form-group input[type="datetime-local"] {
+  font-family: sans-serif;
+}
+
+/* モバイルでの入力欄を最適化 */
+.dashboard .form-group input[type="time"] {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: #f8fafc;
+  font-size: 20px;
+  /* 文字を大きくしてタップしやすく */
+  text-align: center;
+}
+
+/* 入力欄をタップした時にOS標準のピッカーが反応しやすくする */
+.dashboard .form-group input:active {
+  background-color: #ffffff;
+}
+
+/* エラー表示用のスタイル */
+.error-banner {
+  background-color: #fff5f5;
+  border-left: 4px solid #ff3b30;
+  padding: 12px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.error-text {
+  color: #ff3b30;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.error-text.small {
+  font-size: 12px;
+  margin-top: 5px;
+  font-weight: normal;
+}
+
+/* 入力枠自体を赤くしたい場合（オプション） */
+.form-input-field.is-invalid {
+  border-color: #ff3b30 !important;
+  background-color: #fffafa !important;
+}
+
+/* 予約リスト全体のコンテナ */
+.reservation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+/* 個別のカードデザイン */
+.reservation-card {
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s;
+}
+
+.reservation-card:hover {
+  transform: scale(1.01);
+}
+
+/* 左側：時間情報 */
+.res-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.res-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--gradient-1);
+  letter-spacing: 1px;
+}
+
+.res-time {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1a1a1a;
+  line-height: 1.2;
+}
+
+.res-date {
+  font-size: 12px;
+  color: #888;
+}
+
+/* 右側：ボタン・バッジエリア */
+.res-action-area {
+  display: flex;
+  align-items: center;
+}
+
+/* 開始ボタンをチップ風に（小さめでオシャレに） */
+.start-chip {
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(86, 56, 255, 0.2);
+}
+
+/* 達成バッジ */
+.status-badge-complete {
+  background: #f0fdf4;
+  color: #16a34a;
+  padding: 8px 16px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid #dcfce7;
+}
+
+/* 待機バッジ */
+.status-badge-pending {
+  background: #f8fafc;
+  color: #94a3b8;
+  padding: 8px 16px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* タイムラインカード専用のレイアウト */
+.timeline-card {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 15px;
+}
+
+.timeline-main {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+/* アバター */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 140px;
+}
+
+.user-avatar {
+  width: 42px;
+  height: 42px;
+  background: var(--primary-gradient);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 10px rgba(86, 56, 255, 0.2);
+}
+
+.user-name {
+  display: block;
+  font-weight: 700;
+  color: #1a1a1a;
+  font-size: 0.95rem;
+}
+
+/* 運動内容の見た目 */
+.activity-content {
+  flex: 1;
+}
+
+.activity-type {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.activity-memo {
+  margin-top: 8px;
+  padding: 12px;
+  background: #f1f5f9;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: #475569;
+  border-left: 4px solid var(--gradient-1);
+  line-height: 1.4;
+}
+
+/* いいねボタンと達成バッジの並び */
+.timeline-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.like-btn {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  padding: 6px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.like-btn:hover {
+  background: #fff5f5;
+  border-color: #feb2b2;
+  transform: scale(1.05);
+}
+
+.like-count {
+  font-weight: 700;
+  color: #475569;
+}
+
+/* レスポンシブ対応（スマホでは縦に並べる） */
+@media (max-width: 600px) {
+  .timeline-main {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+/* いいね済みボタンのスタイル */
+.like-btn.is-liked {
+  background: #fff5f5;
+  border-color: #feb2b2;
+}
+
+.like-btn.is-liked .like-count {
+  color: #e53e3e;
+}
+
+/* 自分の投稿でいいねできない場合の見た目（オプション） */
+.like-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }

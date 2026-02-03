@@ -7,7 +7,7 @@ from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from .services import assign_team_for_user, get_user_ticket_balance, get_team_pool_balance,grant_initial_tickets
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 User = get_user_model()
 
@@ -95,7 +95,8 @@ def login_view(request):
 @require_POST
 def logout_view(request):
     logout(request)
-    return JsonResponse({"ok": True})
+    return redirect("/auth/login/")
+    
 
 @login_required
 def me(request):

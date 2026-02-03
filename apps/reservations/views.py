@@ -196,7 +196,7 @@ def complete_reservation(request, reservation_id):
     )
 
     if reservation.status == "completed" or reservation.completed_at is not None:
-        return redirect("dashboard")
+        return redirect("timeline_list")
 
     if reservation.checkin_at is None:
         return redirect("/?error=need_checkin")
@@ -222,7 +222,7 @@ def complete_reservation(request, reservation_id):
 
             create_timeline_post_if_needed(r)
 
-            return redirect("dashboard")
+            return redirect("timeline_list")
     else:
         form = ReservationCompleteForm(instance=reservation)
 

@@ -23,7 +23,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // モーダルの外側（暗い背景部分）をクリックした時に閉じる共通処理
+  // --- ★追加：メッセージがある場合に自動でポップアップを開く処理 ---
+  const successModal = document.getElementById('successModal');
+  const messageText = document.getElementById('successMessageText');
+
+  // メッセージの中身が空でない（Djangoからメッセージが届いている）場合
+  if (messageText && messageText.textContent.trim() !== "" && successModal) {
+    successModal.style.display = 'flex';
+  }
+
+  // モーダルの外側をクリックした時に閉じる共通処理
   window.addEventListener('click', (event) => {
     if (event.target.classList.contains('modal')) {
       event.target.style.display = 'none';

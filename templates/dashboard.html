@@ -1,39 +1,85 @@
 {% extends 'base.html' %}
-{% load static %}
 {% block content %}
 <div class="dashboard">
   <h2>ホーム</h2>
   <h1 class="gradient-text">今日の予約</h1>
-  {% for item in reservation_items %}
-  <div class="reservation-item card-container">
-    <p>{{ item.reservation.start_at }}</p>
-    {% if item.reservation.status == "completed" %}
-    <span class="status-badge">達成 🎉</span>
-    {% elif item.can_checkin %}
-    <div class="checkin-container">
-      <form class="checkin-form" method="post" action="{% url 'reservation_checkin' item.reservation.id %}">
-        {% csrf_token %}
-        <button type="button" class="open-modal-btn reserve-btn">チェックイン</button>
-      </form>
-      <div class="modal checkin-modal" style="display: none;">
-        <div class="modal-content">
-          <span class="cancel-checkin close-x">&times;</span>
-          <h2 class="gradient-text">チェックイン</h2>
-          <div class="modal-icon-wrapper">
-            <div class="play-icon-circle"><span class="play-triangle"></span></div>
-          </div>
-          <p>準備はいいですか？<br><small>チェックインして運動を始めましょう</small></p>
-          <div class="modal-actions">
-            <button type="button" class="confirm-checkin reserve-btn full-width">チェックインする</button>
-            <button type="button" class="cancel-checkin btn-link">キャンセル</button>
-          </div>
+
+  <div class="reservation-list">
+    {% for item in reservation_items %}
+    <div class="reservation-card">
+      <div class="res-info">
+        <span class="res-label">START</span>
+        <div class="res-time">{{ item.reservation.start_at|date:"H:i" }}</div>
+        <div class="res-date">{{ item.reservation.start_at|date:"n月j日" }}</div>
+      </div>
+
+      <div class="res-action-area">
+        {% if item.reservation.status == "completed" %}
+        <div class="status-badge-complete">達成 🎉</div>
+        {% elif item.can_checkin %}
+        <div class="checkin-container">
+          <button type="button" class="open-modal-btn start-chip"
+            data-url="{% url 'reservation_checkin' item.reservation.id %}">
+            開始する
+          </button>
         </div>
+        {% else %}
+        <span class="status-badge-pending">待機中</span>
+        {% endif %}
       </div>
     </div>
-    {% else %}
-    <span>{{ item.reservation.status }}</span>
-    {% endif %}
+    {% empty %}
+    <p class="empty-msg">今日の予約はありません</p>
+    {% endfor %}
   </div>
-  {% endfor %}
 </div>
+
+<div id="globalCheckinModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <span class="close-x" id="closeModalX">&times;</span>
+    <h2 class="gradient-text">チェックイン</h2>
+    <div class="modal-icon-wrapper">
+      <div class="play-icon-circle"><span class="play-triangle"></span></div>
+    </div>
+    <p>準備はいいですか？<br><small>チェックインして運動を始めましょう</small></p>
+
+    <form id="globalCheckinForm" method="post" action="">
+      {% csrf_token %}
+      <div class="modal-actions">
+        <button type="submit" class="reserve-btn full-width">チェックインする</button>
+        <button type="button" class="btn-link" id="closeModalBtn">キャンセル</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('globalCheckinModal');
+    const form = document.getElementById('globalCheckinForm');
+    const openButtons = document.querySelectorAll('.open-modal-btn');
+    const closeElements = [document.getElementById('closeModalX'), document.getElementById('closeModalBtn')];
+
+    // ボタンを押した時
+    openButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const actionUrl = btn.getAttribute('data-url');
+        form.setAttribute('action', actionUrl); // フォームの送信先をセット
+        modal.style.display = 'flex'; // モーダルを表示
+      });
+    });
+
+    // 閉じる処理
+    closeElements.forEach(el => {
+      el.addEventListener('click', () => {
+        modal.style.display = 'none';
+      });
+    });
+
+    // 背景クリックで閉じる
+    window.addEventListener('click', (e) => {
+      if (e.target === modal) modal.style.display = 'none';
+    });
+  });
+</script>
 {% endblock %}
