@@ -79,38 +79,53 @@ def new_reservation(request):
 
 @login_required
 def dashboard(request):
+    # 1. 期限切れ予約のチェック（ステータス更新）
     mark_missed_reservations(request.user)
 
     now = timezone.now()
     team = getattr(request.user, "team", None)
 
     last = request.user.last_recovery_at
+    today = timezone.localdate()
     cooldown_ok = not (last and last > (now - timedelta(days=7)))
 
+    # 2. リカバリーが使用可能か判定（週1回制限）
+    last = request.user.last_recovery_at
+    cooldown_ok = not (last and last > (now - timedelta(days=7)))
     recovery_available = bool(team) and cooldown_ok
 
-
+    # 3. 今日以降の予約を取得（__date__gte=today で明日以降も含む）
     reservations = (
         Reservation.objects.filter(
             user=request.user,
-            start_at__date=timezone.localdate(),
+            start_at__date__gte=today,
         )
         .order_by("start_at")
     )
 
     reservation_items = []
     for r in reservations:
+        # 予約が今日かどうか
+        local_start = timezone.localtime(r.start_at)
+        is_today = local_start.date() == today
+        
+        # ステータスが書き換わっていなくても、時間が30分以上過ぎていたらmissed扱いとして扱う（表示用）
+        is_missed = r.status == "missed"
+        if r.status == "scheduled" and r.start_at + timedelta(minutes=30) < now:
+            is_missed = True
+
         reservation_items.append({
             "reservation": r,
+            "is_today": is_today,
             "completed": (r.status == "completed") or (r.completed_at is not None),
             "checked_in": r.checkin_at is not None,
             "can_checkin": can_checkin(r) and (r.checkin_at is None),
-            "missed": r.status == "missed",
+            "missed": is_missed,
             "recovery": r.status == "recovery",
             "recovery_available": recovery_available,  
         })
 
-
+    # 4. チームのタイムライン取得
     team = getattr(request.user, "team", None)
     timeline_posts = []
     liked_post_ids = set()
@@ -120,7 +135,7 @@ def dashboard(request):
             TimelinePost.objects
             .filter(team=team)
             .select_related("reservation", "user")
-            .annotate(like_count=Count("likes"))
+            .annotate(calculated_count=Count("likes"))
             .order_by("-created_at")[:20]
         )
 
@@ -138,6 +153,7 @@ def dashboard(request):
             "timeline_posts": timeline_posts,
             "team": team,
             "liked_post_ids": liked_post_ids,
+            "today": today,
         },
     )
 

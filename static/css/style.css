@@ -605,3 +605,14 @@ button.status-badge-missed:hover {
   cursor: not-allowed;
   opacity: 0.6;
 }
+/* 明日以降のカードを少しだけ控えめにする */
+.future-card {
+  opacity: 0.85;
+  border-left: 4px solid #cbd5e1;
+  /* グレーのアクセント */
+}
+
+.future-card .res-label {
+  color: #94a3b8;
+  /* ラベルの色をグレーに */
+}
