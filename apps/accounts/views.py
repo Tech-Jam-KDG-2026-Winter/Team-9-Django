@@ -2,12 +2,16 @@ import json
 from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
+from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
-from .services import assign_team_for_user, get_user_ticket_balance, get_team_pool_balance,grant_initial_tickets
-
 from django.shortcuts import render, redirect
+from .services import assign_team_for_user, get_user_ticket_balance, get_team_pool_balance,grant_initial_tickets
+from apps.reservations.models import Reservation
+from django.utils import timezone
+from datetime import timedelta
+
 
 User = get_user_model()
 
@@ -123,26 +127,65 @@ def me(request):
 def mypage(request):
     user = request.user
 
-    # 仮データ（実装時は実データに差し替え）
-    weekly = {
-        "my_achievements": 4,
-        "my_reservations": 5,
-    }
-    weekly["progress_percent"] = int(weekly["my_achievements"] / max(1, weekly["my_reservations"]) * 100)
+    # 実データ
+    tickets = get_user_ticket_balance(user)
+    total_achievements = Reservation.objects.filter(
+        user=user
+    ).filter(
+        Q(status="completed") | Q(completed_at__isnull=False)
+    ).count()
 
+    now = timezone.localtime()
+    week_start = now - timedelta(days=now.weekday())
+    week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+    week_end = week_start + timedelta(days=7)
+
+    weekly_reservations_qs = Reservation.objects.filter(
+        user=user,
+        start_at__gte=week_start,
+        start_at__lt=week_end,
+    )
+
+    weekly_reservations = weekly_reservations_qs.count()
+    weekly_achievements = weekly_reservations_qs.filter(
+        Q(status="completed") | Q(completed_at__isnull=False)
+    ).count()
+
+    weekly = {
+        "my_achievements": weekly_achievements,
+        "my_reservations": weekly_reservations,
+    }
+    weekly["progress_percent"] = int(
+        weekly["my_achievements"] / max(1, weekly["my_reservations"]) * 100
+    )
+
+    reservations_qs = Reservation.objects.filter(user=user).order_by("-start_at")[:5]
     reservations = [
-        {"date": "2026-02-03", "time": "07:00", "status": "completed"},
-        {"date": "2026-02-04", "time": "19:00", "status": "pending"},
+        {
+            "date": r.start_at.strftime("%Y-%m-%d"),
+            "time": r.start_at.strftime("%H:%M"),
+            "status": r.status,   # scheduled / completed / missed / recovery
+        }
+        for r in reservations_qs
     ]
+
+    missed = Reservation.objects.filter(
+        user=user,
+        status="missed",
+        used_recovery=False,
+    ).order_by("-start_at").first()
+
+    recovery_available = missed is not None
 
     context = {
         "user": {
             "name": getattr(user, "display_name", user.email),
             "avatar": "👤",
-            "tickets": 7,
-            "weekly_achievements": 4,
-            "total_achievements": 47,
-            "recovery_available": True,
+            "tickets": tickets,
+            "weekly_achievements": weekly["my_achievements"],
+            "total_achievements": total_achievements,
+            "recovery_available": recovery_available,
+            "recovery_target_id": missed.id if missed else None,
         },
         "weekly": weekly,
         "reservations": reservations,
