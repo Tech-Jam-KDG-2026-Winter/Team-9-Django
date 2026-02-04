@@ -88,23 +88,14 @@ def dashboard(request):
     last = request.user.last_recovery_at
     today = timezone.localdate()
     cooldown_ok = not (last and last > (now - timedelta(days=7)))
-
-    # --- 追加・修正：月曜リセットロジック ---
-    # 今週の月曜日 0:00 を取得
-    start_of_week = today - timedelta(days=today.weekday())
-    
+    start_of_week = today - timedelta(days=today.weekday()) 
     last = request.user.last_recovery_at
     cooldown_ok = True
     if last:
-        # 最後にリカバリーした日が「今週の月曜日」以降なら、今週はもう使えない
         if last.date() >= start_of_week:
             cooldown_ok = False
 
-    # リカバリーが使用可能か判定
     recovery_available = bool(team) and cooldown_ok
-    # --- ここまで ---
-
-    # 今日以降の予約を取得（__date__gte=today で明日以降も含む）
     reservations = (
         Reservation.objects.filter(
             user=request.user,
@@ -115,11 +106,8 @@ def dashboard(request):
 
     reservation_items = []
     for r in reservations:
-        # 予約が今日かどうか
         local_start = timezone.localtime(r.start_at)
         is_today = local_start.date() == today
-        
-        # ステータスが書き換わっていなくても、時間が30分以上過ぎていたらmissed扱いとして扱う（表示用）
         is_missed = r.status == "missed"
         if r.status == "scheduled" and r.start_at + timedelta(minutes=30) < now:
             is_missed = True
@@ -135,7 +123,6 @@ def dashboard(request):
             "recovery_available": recovery_available,  
         })
 
-    # 4. チームのタイムライン取得
     team = getattr(request.user, "team", None)
     timeline_posts = []
     liked_post_ids = set()
@@ -283,15 +270,12 @@ def use_recovery(request, reservation_id):
     if team is None:
         return redirect("/?error=no_team")
 
-    # --- 追加・修正：月曜リセットロジックに変更 ---
     today = timezone.localdate()
     start_of_week = today - timedelta(days=today.weekday())
 
     if user.last_recovery_at:
         if user.last_recovery_at.date() >= start_of_week:
-            # 今週すでに使用済み
             return redirect("/?error=recovery_cooldown")
-    # --- ここまで ---
 
     reservation.status = "recovery"
     reservation.used_recovery = True
