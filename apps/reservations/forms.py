@@ -61,28 +61,28 @@ class ReservationForm(forms.ModelForm):
         if start_at < (now + timedelta(minutes=1)):
             raise forms.ValidationError("現在より前の時刻で予約を入れることはできません。")
 
-        # # 1. 1日2枠まで
-        # day = timezone.localdate(start_at)
-        # day_count = Reservation.objects.filter(
-        #     user=user,
-        #     start_at__date=day,
-        # ).count()
+        # 1. 1日2枠まで
+        day = timezone.localdate(start_at)
+        day_count = Reservation.objects.filter(
+            user=user,
+            start_at__date=day,
+        ).count()
 
-        # if day_count >= 2:
-        #     raise forms.ValidationError("予約は1日2枠までです。")
+        if day_count >= 2:
+            raise forms.ValidationError("予約は1日2枠までです。")
 
-        # # 2. 前後3時間空ける
-        # lower = start_at - timedelta(hours=3)
-        # upper = start_at + timedelta(hours=3)
+        # 2. 前後3時間空ける
+        lower = start_at - timedelta(hours=3)
+        upper = start_at + timedelta(hours=3)
 
-        # conflict_exists = Reservation.objects.filter(
-        #     user=user,
-        #     start_at__gt=lower,
-        #     start_at__lt=upper,
-        # ).exists()
+        conflict_exists = Reservation.objects.filter(
+            user=user,
+            start_at__gt=lower,
+            start_at__lt=upper,
+        ).exists()
 
-        # if conflict_exists:
-        #     raise forms.ValidationError("予約は前後3時間以上空けてください。")
+        if conflict_exists:
+            raise forms.ValidationError("予約は前後3時間以上空けてください。")
 
         # 合成した値をcleaned_dataにセット
         cleaned_data["start_at"] = start_at
