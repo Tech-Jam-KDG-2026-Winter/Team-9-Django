@@ -62,13 +62,16 @@
     <p class="muted">週1回の救済機能</p>
     <p class="muted">没収回避のみ（ボーナスなし）</p>
     {% if user.recovery_available %}
-    <form method="post" action="{% url 'reservation_recovery' user.recovery_target_id %}">
+    <form method="post" action="{% url 'reservation_recovery' user.recovery_target_id %}" class="recovery-actions right">
         {% csrf_token %}
         <button class="btn btn-danger" type="submit">リカバリーを使う</button>
     </form>
     {% else %}
-    <button class="btn btn-ghost" disabled>リカバリー不可</button>
+    <div class="recovery-actions left">
+        <button class="btn btn-ghost" disabled>リカバリー不可</button>
+    </div>
     {% endif %}
+
 
   </section>
 
