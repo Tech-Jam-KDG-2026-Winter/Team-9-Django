@@ -89,10 +89,20 @@ def dashboard(request):
     today = timezone.localdate()
     cooldown_ok = not (last and last > (now - timedelta(days=7)))
 
-    # 2. リカバリーが使用可能か判定（週1回制限）
+    # --- ★追加・修正：月曜リセットロジック ---
+    # 今週の月曜日 0:00 を取得
+    start_of_week = today - timedelta(days=today.weekday())
+    
     last = request.user.last_recovery_at
-    cooldown_ok = not (last and last > (now - timedelta(days=7)))
+    cooldown_ok = True
+    if last:
+        # 最後にリカバリーした日が「今週の月曜日」以降なら、今週はもう使えない
+        if last.date() >= start_of_week:
+            cooldown_ok = False
+
+    # 2. リカバリーが使用可能か判定
     recovery_available = bool(team) and cooldown_ok
+    # --- ここまで ---
 
     # 3. 今日以降の予約を取得（__date__gte=today で明日以降も含む）
     reservations = (
@@ -273,11 +283,15 @@ def use_recovery(request, reservation_id):
     if team is None:
         return redirect("/?error=no_team")
 
-    # 週1制限
+    # --- ★追加・修正：ここも月曜リセットロジックに変更 ---
+    today = timezone.localdate()
+    start_of_week = today - timedelta(days=today.weekday())
+
     if user.last_recovery_at:
-        one_week_ago = timezone.now() - timedelta(days=7)
-        if user.last_recovery_at > one_week_ago:
+        if user.last_recovery_at.date() >= start_of_week:
+            # 今週すでに使用済み
             return redirect("/?error=recovery_cooldown")
+    # --- ここまで ---
 
     reservation.status = "recovery"
     reservation.used_recovery = True
