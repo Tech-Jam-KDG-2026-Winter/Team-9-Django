@@ -29,7 +29,8 @@
   <section class="card weekly">
     <div class="card-header">
       <h2>今週の進捗</h2>
-      <span class="week">Week 3/4</span>
+      <span class="week">{{ weekly.week_label }}</span>
+
     </div>
 
     <div class="progress-row">
@@ -38,7 +39,7 @@
         ({{ weekly.progress_percent }}%)</span>
     </div>
     <div class="progress-bar">
-      <div class="progress-fill" style="width: {{ weekly.progress_percent }}%"></div>
+      <div class="progress-fill" style="--p: {{ weekly.progress_percent }}%"></div>
     </div>
 
     <div class="notice notice-gold">

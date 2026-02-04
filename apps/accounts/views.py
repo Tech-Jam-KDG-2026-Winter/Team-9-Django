@@ -1,4 +1,5 @@
 import json
+import calendar
 from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
@@ -158,6 +159,12 @@ def mypage(request):
     weekly["progress_percent"] = int(
         weekly["my_achievements"] / max(1, weekly["my_reservations"]) * 100
     )
+
+    now = timezone.localtime()
+    days_in_month = calendar.monthrange(now.year, now.month)[1]
+    weeks_in_month = (days_in_month + 6) // 7
+    week_of_month = (now.day - 1) // 7 + 1
+    weekly["week_label"] = f"Week {week_of_month}/{weeks_in_month}"
 
     reservations_qs = Reservation.objects.filter(user=user).order_by("-start_at")[:5]
     reservations = [

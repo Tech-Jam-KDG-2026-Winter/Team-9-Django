@@ -77,6 +77,7 @@ body {
     margin-bottom: 16px;
   }
   .progress-fill {
+    width: var(--p);
     height: 100%;
     background: #111827;
   }
