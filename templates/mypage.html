@@ -11,7 +11,6 @@
   <section class="profile">
     <div class="avatar">👤</div>
     <h1 class="name">{{ user.name }}</h1>
-    <p class="subtitle">起動を続けている仲間</p>
   </section>
 
   <!-- Stats -->
@@ -56,11 +55,23 @@
     <div class="recovery-header">
       <h2>救済（リカバリー）</h2>
       <span class="recovery-status {{ user.recovery_available|yesno:'ok,ng' }}">
-        {{ user.recovery_available|yesno:'利用可能,使用済み' }}
+        {{ user.recovery_available|yesno:'利用可能,利用不可' }}
       </span>
     </div>
     <p class="muted">週1回の救済機能</p>
     <p class="muted">没収回避のみ（ボーナスなし）</p>
+    {% if user.recovery_available %}
+    <form method="post" action="{% url 'reservation_recovery' user.recovery_target_id %}" class="recovery-actions right">
+        {% csrf_token %}
+        <button class="btn btn-danger" type="submit">リカバリーを使う</button>
+    </form>
+    {% else %}
+    <div class="recovery-actions left">
+        <button class="btn btn-ghost" disabled>リカバリー不可</button>
+    </div>
+    {% endif %}
+
+
   </section>
 
   <section class="card actions">

@@ -125,3 +125,9 @@ body {
     background: #dc2626;
     color: #fff;
   }  
+
+  .recovery-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }    
