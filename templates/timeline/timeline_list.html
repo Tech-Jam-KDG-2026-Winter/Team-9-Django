@@ -1,18 +1,47 @@
 {% extends 'base.html' %}
-{% load static %}
-
 {% block content %}
 <div class="dashboard">
-  <h2>タイムライン</h2>
-  <h1 class="gradient-text">みんなの頑張り</h1>
+  <h2 class="gradient-text">チームタイムライン</h2>
+
+  {% if team %}
+  <div class="pool-card-gradient">
+    <div class="pool-header">
+      <span class="pool-icon">👥</span>
+      <span class="pool-title">チームプール</span>
+    </div>
+
+    <div class="pool-main-display">
+      <div class="balance-container">
+        <span class="balance-icon">💎</span>
+        <span class="balance-number">{{ team_pool_balance }}</span>
+        <span class="balance-unit">チケット</span>
+      </div>
+      <div class="balance-sub">現在のプール残高</div>
+    </div>
+
+    <div class="pool-stats-row">
+      <div class="stat-glass-box">
+        <div class="stat-inner-label">📈 本日の流入</div>
+        <div class="stat-inner-value">+{{ today_income }}</div>
+      </div>
+      <div class="stat-glass-box">
+        <div class="stat-inner-label">📉 本日の支出</div>
+        <div class="stat-inner-value">-{{ today_outcome }}</div>
+      </div>
+    </div>
+
+    <div class="pool-footer-note">
+      <span class="note-icon">📍</span>
+      <span class="note-text">チーム全員が今週すべて達成すると、全員に+1チケット！</span>
+    </div>
+  </div>
+  {% endif %}
 
   <div class="reservation-list">
     {% for post in posts %}
     {% include "timeline/_post.html" with post=post %}
     {% empty %}
-    <div class="card-container centered-view">
-      <p class="empty-msg">まだ投稿がありません。<br>運動して最初の記録を投稿しましょう！</p>
-    </div>
+    <p class="empty-msg">まだ投稿はありません</p>
     {% endfor %}
   </div>
 </div>

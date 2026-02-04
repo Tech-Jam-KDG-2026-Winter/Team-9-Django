@@ -616,3 +616,113 @@ button.status-badge-missed:hover {
   color: #94a3b8;
   /* ラベルの色をグレーに */
 }
+
+/* --- チームプール専用デザイン --- */
+
+/* メインカード：既存のプライマリグラデーションを活かす */
+.pool-card-gradient {
+  background: var(--primary-gradient);
+  border-radius: 24px;
+  padding: 30px;
+  color: #ffffff;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 25px rgba(166, 0, 255, 0.25);
+  text-align: left;
+  /* カード内は左寄せ */
+}
+
+.pool-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  opacity: 0.9;
+  font-weight: 600;
+}
+
+/* メインの残高表示 */
+.pool-main-display {
+  margin-bottom: 25px;
+}
+
+.balance-container {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.balance-icon {
+  font-size: 24px;
+}
+
+.balance-number {
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.balance-unit {
+  font-size: 16px;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.balance-sub {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 5px;
+}
+
+/* 統計グリッド（ガラスモーフィズム） */
+.pool-stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.stat-glass-box {
+  background: rgba(255, 255, 255, 0.15);
+  /* 白を少し混ぜる */
+  backdrop-filter: blur(10px);
+  /* ぼかし */
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 15px;
+}
+
+.stat-inner-label {
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.9;
+  margin-bottom: 4px;
+}
+
+.stat-inner-value {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+/* フッターの注釈 */
+.pool-footer-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  background: rgba(0, 0, 0, 0.1);
+  padding: 8px 12px;
+  border-radius: 10px;
+  width: fit-content;
+}
+
+.note-text {
+  opacity: 0.9;
+}
+
+/* モバイル対応：統計グリッドを1列に */
+@media (max-width: 480px) {
+  .pool-stats-row {
+    grid-template-columns: 1fr;
+  }
+}
