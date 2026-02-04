@@ -53,6 +53,14 @@ class ReservationForm(forms.ModelForm):
 
         # --- ここからご提示いただいたバリデーション ---
 
+        # 現在時刻（日本時間）
+        now = timezone.now()
+
+        # --- ① 過去時刻のチェック ---
+        # 余裕を持って「今から5分後」より前ならエラーにする
+        if start_at < (now + timedelta(minutes=1)):
+            raise forms.ValidationError("現在より前の時刻で予約を入れることはできません。")
+
         # # 1. 1日2枠まで
         # day = timezone.localdate(start_at)
         # day_count = Reservation.objects.filter(
