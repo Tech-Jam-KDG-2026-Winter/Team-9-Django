@@ -12,20 +12,19 @@ def timeline_list(request):
     team = getattr(request.user, "team", None)
     today = timezone.localdate()
     
-    # 初期値
     team_pool_balance = 0
     today_income = 0
     today_outcome = 0
 
     if team:
-        # 1. 現在のプール総額
+        # 現在のプール総額
         pool_data = TicketTransaction.objects.filter(
             team=team, 
             owner_type="TEAM"
         ).aggregate(total=Sum('amount'))
         team_pool_balance = pool_data['total'] or 0
 
-        # 2. 本日の流入（未達成による没収など：amountが正の数）
+        # 本日の流入
         income_data = TicketTransaction.objects.filter(
             team=team,
             owner_type="TEAM",
@@ -34,7 +33,7 @@ def timeline_list(request):
         ).aggregate(total=Sum('amount'))
         today_income = income_data['total'] or 0
 
-        # 3. 本日の支出（amountが負の数。表示上は正の数にするために abs() か -1を掛ける）
+        # 本日の支出
         outcome_data = TicketTransaction.objects.filter(
             team=team,
             owner_type="TEAM",
@@ -78,8 +77,7 @@ def toggle_like(request, post_id):
     else:
         Like.objects.get_or_create(user=request.user, post=post)
         liked = True
-
-    # ★ 修正ポイント：モデルにフィールドがないので、リレーションから数える
+    
     current_count = post.likes.count()
 
     return JsonResponse({"liked": liked, "count": current_count})
