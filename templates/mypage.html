@@ -62,11 +62,11 @@
     <p class="muted">週1回の救済機能</p>
     <p class="muted">没収回避のみ（ボーナスなし）</p>
   </section>
-  
+
   <section class="card actions">
     <form action="{% url 'logout' %}" method="post">
       {% csrf_token %}
-      <button class="btn btn-danger" type="submit">ログアウト</button>
+      <button type="button" onclick="logout()" class="btn btn-danger">ログアウト</button>
     </form>
   </section>  
 </main>

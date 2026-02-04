@@ -95,7 +95,7 @@ def login_view(request):
 @require_http_methods(["GET", "POST"])
 def logout_view(request):
     logout(request)
-    return render(request, "accounts/login.html")
+    return JsonResponse({"ok": True})
 
 
 @login_required
