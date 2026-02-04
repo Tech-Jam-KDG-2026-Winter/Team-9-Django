@@ -6,12 +6,12 @@ from .models import Reservation
 
 
 class ReservationForm(forms.ModelForm):
-    # ① HTML上で表示する「年」を含まない選択肢
+    # HTML上で表示する「年」を含まない選択肢
     date = forms.ChoiceField(
         label="日付", 
         widget=forms.Select(attrs={'class': 'form-input-field'})
     )
-    # ② スマホでドラムロールになる時間選択
+    # スマホでドラムロールになる時間選択
     time = forms.TimeField(
         label="時間", 
         widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-input-field'})
@@ -51,17 +51,16 @@ class ReservationForm(forms.ModelForm):
             timezone.get_current_timezone()
         )
 
-        # --- ここからご提示いただいたバリデーション ---
 
         # 現在時刻（日本時間）
         now = timezone.now()
 
-        # --- ① 過去時刻のチェック ---
+        # --- 過去時刻のチェック ---
         # 余裕を持って「今から5分後」より前ならエラーにする
         if start_at < (now + timedelta(minutes=1)):
             raise forms.ValidationError("現在より前の時刻で予約を入れることはできません。")
 
-        # 1. 1日2枠まで
+        # 1日2枠まで
         day = timezone.localdate(start_at)
         day_count = Reservation.objects.filter(
             user=user,
@@ -71,7 +70,7 @@ class ReservationForm(forms.ModelForm):
         if day_count >= 2:
             raise forms.ValidationError("予約は1日2枠までです。")
 
-        # 2. 前後3時間空ける
+        # 前後3時間空ける
         lower = start_at - timedelta(hours=3)
         upper = start_at + timedelta(hours=3)
 
