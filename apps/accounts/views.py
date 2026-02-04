@@ -92,11 +92,12 @@ def login_view(request):
 
 
 @csrf_protect
-@require_POST
+@require_http_methods(["GET", "POST"])
 def logout_view(request):
     logout(request)
     return redirect("/auth/login/")
     
+
 
 @login_required
 def me(request):
@@ -117,3 +118,33 @@ def me(request):
             "team_pool": get_team_pool_balance(team) if team else 0,
         },
     })
+
+@login_required
+def mypage(request):
+    user = request.user
+
+    # 仮データ（実装時は実データに差し替え）
+    weekly = {
+        "my_achievements": 4,
+        "my_reservations": 5,
+    }
+    weekly["progress_percent"] = int(weekly["my_achievements"] / max(1, weekly["my_reservations"]) * 100)
+
+    reservations = [
+        {"date": "2026-02-03", "time": "07:00", "status": "completed"},
+        {"date": "2026-02-04", "time": "19:00", "status": "pending"},
+    ]
+
+    context = {
+        "user": {
+            "name": getattr(user, "display_name", user.email),
+            "avatar": "👤",
+            "tickets": 7,
+            "weekly_achievements": 4,
+            "total_achievements": 47,
+            "recovery_available": True,
+        },
+        "weekly": weekly,
+        "reservations": reservations,
+    }
+    return render(request, "mypage.html", context)

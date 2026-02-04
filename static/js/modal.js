@@ -77,3 +77,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+async function logout() {
+  const csrftoken = getCookie("csrftoken");
+  const res = await fetch("/auth/logout/", {
+    method: "POST",
+    headers: { "X-CSRFToken": csrftoken },
+    credentials: "include"
+  });
+
+  if (res.ok) {
+    window.location.href = "/auth/login/";
+  }
+}

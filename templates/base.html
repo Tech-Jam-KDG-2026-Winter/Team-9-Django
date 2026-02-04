@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>運動予約デポジットアプリ</title>
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block extra_head %}{% endblock %}
 </head>
 
 <body>
@@ -22,7 +23,7 @@
   <nav class="menu">
     <a href="{% url 'dashboard' %}">ホーム</a>
     <a href="{% url 'timeline_list' %}">タイムライン</a>
-    <a href="#">マイページ</a>
+    <a href="{% url 'mypage' %}">マイページ</a>
   </nav>
 
   <main id="contents">
