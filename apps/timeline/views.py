@@ -5,7 +5,7 @@ from .models import TimelinePost, Like
 from django.http import JsonResponse
 from django.db.models import Count, Sum, Q
 from django.utils import timezone
-from apps.accounts.models import TicketTransaction  # チームプールの計算に必要
+from apps.accounts.models import TicketTransaction  
 
 @login_required
 def timeline_list(request):
