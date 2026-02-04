@@ -79,7 +79,7 @@ def new_reservation(request):
 
 @login_required
 def dashboard(request):
-    # 1. 期限切れ予約のチェック（ステータス更新）
+    #期限切れ予約のチェック（ステータス更新）
     mark_missed_reservations(request.user)
 
     now = timezone.now()
@@ -89,7 +89,7 @@ def dashboard(request):
     today = timezone.localdate()
     cooldown_ok = not (last and last > (now - timedelta(days=7)))
 
-    # --- ★追加・修正：月曜リセットロジック ---
+    # --- 追加・修正：月曜リセットロジック ---
     # 今週の月曜日 0:00 を取得
     start_of_week = today - timedelta(days=today.weekday())
     
@@ -100,11 +100,11 @@ def dashboard(request):
         if last.date() >= start_of_week:
             cooldown_ok = False
 
-    # 2. リカバリーが使用可能か判定
+    # リカバリーが使用可能か判定
     recovery_available = bool(team) and cooldown_ok
     # --- ここまで ---
 
-    # 3. 今日以降の予約を取得（__date__gte=today で明日以降も含む）
+    # 今日以降の予約を取得（__date__gte=today で明日以降も含む）
     reservations = (
         Reservation.objects.filter(
             user=request.user,
@@ -283,7 +283,7 @@ def use_recovery(request, reservation_id):
     if team is None:
         return redirect("/?error=no_team")
 
-    # --- ★追加・修正：ここも月曜リセットロジックに変更 ---
+    # --- 追加・修正：月曜リセットロジックに変更 ---
     today = timezone.localdate()
     start_of_week = today - timedelta(days=today.weekday())
 
